@@ -1,0 +1,263 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Details - Code Online Judge</title>
+    <link rel="stylesheet" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}">
+    <style>
+        :root {
+            --light-gray: #f5f7fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --text-dark: #343a40;
+            --text-light: #6c757d;
+            --accent-color: #5c7cfa;
+            --border-color: #dee2e6;
+            --hover-bg: #e2e6ea;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-gray);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        .content {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: var(--text-dark);
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .card-header i {
+            margin-right: 12px;
+            color: var(--accent-color);
+        }
+
+        .footer {
+            background-color: white;
+            color: var(--text-light);
+            text-align: center;
+            padding: 25px 15px;
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            font-size: 15px;
+        }
+
+        .breadcrumb {
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .breadcrumb a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb span {
+            color: var(--text-light);
+            margin: 0 5px;
+        }
+
+        .form-actions {
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .form-actions .layui-btn {
+            margin-left: 10px;
+        }
+
+        .detail-item {
+            margin-bottom: 20px;
+            display: flex;
+        }
+
+        .detail-label {
+            width: 120px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .detail-value {
+            flex: 1;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .role-student {
+            background-color: #20c997;
+        }
+
+        .role-teacher {
+            background-color: #fd7e14;
+        }
+
+        .role-admin {
+            background-color: #dc3545;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .status-active {
+            background-color: #28a745;
+        }
+
+        .status-inactive {
+            background-color: #6c757d;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content">
+        <div class="breadcrumb">
+            <a href="/">Home</a>
+            <span>/</span>
+            <a href="/userList/">User Management</a>
+            <span>/</span>
+            <a href="javascript:;">User Details</a>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="layui-icon layui-icon-user"></i>
+                User Details
+            </div>
+
+            <div class="layui-form">
+                <div class="detail-item">
+                    <div class="detail-label">Username</div>
+                    <div class="detail-value">{{ user.username }}</div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="detail-label">Role</div>
+                    <div class="detail-value">
+                        {% if user.role == 1 %}
+                        <span class="role-badge role-student">Student</span>
+                        {% elif user.role == 2 %}
+                        <span class="role-badge role-teacher">Teacher</span>
+                        {% elif user.role == 3 %}
+                        <span class="role-badge role-admin">Admin</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="detail-label">Code</div>
+                    <div class="detail-value">{{ user.usercode }}</div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="detail-label">Additional Info</div>
+                    <div class="detail-value">{{ user.remark_text }}</div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="detail-label">Status</div>
+                    <div class="detail-value">
+                        {% if user.is_active %}
+                        <span class="status-badge status-active">Enabled</span>
+                        {% else %}
+                        <span class="status-badge status-inactive">Disabled</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="detail-label">Created At</div>
+                    <div class="detail-value">{{ user.date_joined|date:"Y-m-d H:i:s" }}</div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="detail-label">Last Login</div>
+                    <div class="detail-value">{{ user.last_login|date:"Y-m-d H:i:s"|default:"Never logged in" }}</div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="layui-btn layui-btn-primary" id="backBtn">Back</button>
+                    <button type="button" class="layui-btn layui-btn-normal" id="editBtn">Edit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        © 2025 Code Online Judge Copyright | Elegant code review platform
+    </footer>
+
+    <!-- 先引入jQuery -->
+    <script src="{% static 'js/jquery-3.7.1.js' %}"></script>
+    <!-- 再引入Layui -->
+    <script src="{% static 'layui-v2.11.4/layui/layui.js' %}"></script>
+    <script>
+        layui.use(['layer'], function () {
+            var layer = layui.layer;
+            
+            // 返回按钮点击事件
+            $('#backBtn').on('click', function(){
+                window.location.href = '/userList/';
+            });
+            
+            // 编辑按钮点击事件
+            $('#editBtn').on('click', function(){
+                window.location.href = '/editUser/{{ user.id }}/';
+            });
+        });
+    </script>
+</body>
+
+</html>

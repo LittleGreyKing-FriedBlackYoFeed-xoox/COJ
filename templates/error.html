@@ -1,0 +1,188 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Code Online Judge - 错误页面">
+    <title>出错了 - Code Online Judge</title>
+    <link rel="stylesheet" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}">
+    <style>
+        :root {
+            --light-gray: #f5f7fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --text-dark: #343a40;
+            --text-light: #6c757d;
+            --accent-color: #5c7cfa;
+            --border-color: #dee2e6;
+            --hover-bg: #e2e6ea;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-gray);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: var(--text-dark);
+            font-size: 22px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .logo i {
+            margin-right: 12px;
+            font-size: 26px;
+            color: var(--accent-color);
+            background: linear-gradient(135deg, var(--accent-color), #748ffc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .content {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .error-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .error-icon {
+            font-size: 80px;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+
+        .error-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-dark);
+        }
+
+        .error-message {
+            font-size: 18px;
+            color: var(--text-light);
+            margin-bottom: 30px;
+        }
+
+        .error-details {
+            background-color: var(--light-gray);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            margin-top: 20px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: var(--text-dark);
+        }
+
+        .footer {
+            background-color: white;
+            color: var(--text-light);
+            text-align: center;
+            padding: 25px 15px;
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            font-size: 15px;
+        }
+
+        .action-buttons {
+            margin-top: 30px;
+        }
+
+        .action-buttons .layui-btn {
+            margin: 0 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <i class="layui-icon layui-icon-code-circle"></i>
+                Code Online Judge(LCTC)
+            </a>
+        </div>
+    </header>
+
+    <div class="content">
+        <div class="error-card">
+            <i class="layui-icon layui-icon-face-cry error-icon"></i>
+            <h1 class="error-title">出错了</h1>
+            <p class="error-message">{{ error_message|default:"系统遇到了一个错误，请稍后再试。" }}</p>
+            
+            {% if error_details %}
+            <div class="error-details">
+                {{ error_details }}
+            </div>
+            {% endif %}
+            
+            <div class="action-buttons">
+                <a href="javascript:history.back();" class="layui-btn layui-btn-primary">返回上一页</a>
+                <a href="/" class="layui-btn">返回首页</a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        © 2025 Code Online Judge Copyright | Elegant code review platform
+    </footer>
+
+    <script src="{% static 'js/jquery-3.7.1.js' %}"></script>
+    <script src="{% static 'layui-v2.11.4/layui/layui.js' %}"></script>
+</body>
+
+</html>

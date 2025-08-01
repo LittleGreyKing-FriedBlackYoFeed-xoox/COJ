@@ -1,0 +1,369 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add User - Code Online Judge</title>
+    <link rel="stylesheet" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}">
+    <style>
+        :root {
+            --light-gray: #f5f7fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --text-dark: #343a40;
+            --text-light: #6c757d;
+            --accent-color: #5c7cfa;
+            --border-color: #dee2e6;
+            --hover-bg: #e2e6ea;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-gray);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        .content {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: var(--text-dark);
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .card-header i {
+            margin-right: 12px;
+            color: var(--accent-color);
+        }
+
+        .footer {
+            background-color: white;
+            color: var(--text-light);
+            text-align: center;
+            padding: 25px 15px;
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            font-size: 15px;
+        }
+
+        .breadcrumb {
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .breadcrumb a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb span {
+            color: var(--text-light);
+            margin: 0 5px;
+        }
+
+        .form-actions {
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .form-actions .layui-btn {
+            margin-left: 10px;
+        }
+
+        .student-fields,
+        .teacher-fields,
+        .admin-fields {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content">
+        <div class="breadcrumb">
+            <a href="/">Home</a>
+            <span>/</span>
+            <a href="/userList/">User Management</a>
+            <span>/</span>
+            <a href="javascript:;">Add User</a>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="layui-icon layui-icon-add-1"></i>
+                Add User
+            </div>
+
+            <div class="layui-form" lay-filter="addUserForm">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Username</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="username" required lay-verify="required" placeholder="Please enter username" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Password</label>
+                    <div class="layui-input-block">
+                        <input type="password" name="password" required lay-verify="required" placeholder="Please enter password" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Confirm Password</label>
+                    <div class="layui-input-block">
+                        <input type="password" name="confirmPassword" required lay-verify="required" placeholder="Please confirm password" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">User Role</label>
+                    <div class="layui-input-block">
+                        <select name="role" lay-verify="required" lay-filter="roleSelect">
+                            <option value="">Please select role</option>
+                            <option value="1">Student</option>
+                            <option value="2">Teacher</option>
+                            <option value="3">Admin</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 学生特有字段 -->
+                <div class="student-fields">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">Student ID</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="student_id" placeholder="Please enter student ID" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">College</label>
+                        <div class="layui-input-block">
+                            <select name="college">
+                                <option value="">Please select college</option>
+                                <option value="信息学院">Information College</option>
+                                <option value="医学院">Medical College</option>
+                                <option value="文学院">Literature College</option>
+                                <option value="理学院">Science College</option>
+                                <option value="工学院">Engineering College</option>
+                                <option value="商学院">Business College</option>
+                                <option value="法学院">Law College</option>
+                                <option value="艺术学院">Art College</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 教师特有字段 -->
+                <div class="teacher-fields">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">Teacher ID</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="teacher_id" placeholder="Please enter teacher ID" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">Title</label>
+                        <div class="layui-input-block">
+                            <select name="title">
+                                <option value="">Please select title</option>
+                                <option value="未定级">Unclassified</option>
+                                <option value="助教">Teaching Assistant</option>
+                                <option value="讲师">Lecturer</option>
+                                <option value="副教授">Associate Professor</option>
+                                <option value="教授">Professor</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 管理员特有字段 -->
+                <div class="admin-fields">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">Admin ID</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="admin_id" placeholder="Please enter admin ID" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Status</label>
+                    <div class="layui-input-block">
+                        <input type="checkbox" name="is_active" lay-skin="switch" lay-text="Enable|Disable" checked>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="layui-btn layui-btn-primary" id="cancelBtn">Cancel</button>
+                    <button class="layui-btn" lay-submit lay-filter="addUserSubmit">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        © 2025 Code Online Judge Copyright | Elegant code review platform
+    </footer>
+
+    <!-- 先引入jQuery -->
+    <script src="{% static 'js/jquery-3.7.1.js' %}"></script>
+    <!-- 再引入Layui -->
+    <script src="{% static 'layui-v2.11.4/layui/layui.js' %}"></script>
+    <script>
+        layui.use(['form', 'layer'], function () {
+            var form = layui.form;
+            var layer = layui.layer;
+            
+            // 监听角色选择变化
+            form.on('select(roleSelect)', function(data){
+                // 隐藏所有角色特有字段
+                $('.student-fields, .teacher-fields, .admin-fields').hide();
+                
+                // 根据选择的角色显示对应字段
+                if(data.value === '1') {
+                    $('.student-fields').show();
+                } else if(data.value === '2') {
+                    $('.teacher-fields').show();
+                } else if(data.value === '3') {
+                    $('.admin-fields').show();
+                }
+            });
+            
+            // 监听表单提交
+            form.on('submit(addUserSubmit)', function(data){
+                // 验证两次密码是否一致
+                if(data.field.password !== data.field.confirmPassword) {
+                    layer.msg('The passwords do not match', {icon: 2});
+                    return false;
+                }
+                
+                // 验证角色特有字段
+                if(data.field.role === '1') {
+                    if(!data.field.student_id) {
+                        layer.msg('Please enter student ID', {icon: 2});
+                        return false;
+                    }
+                    if(!data.field.college) {
+                        layer.msg('Please select college', {icon: 2});
+                        return false;
+                    }
+                } else if(data.field.role === '2') {
+                    if(!data.field.teacher_id) {
+                        layer.msg('Please enter teacher ID', {icon: 2});
+                        return false;
+                    }
+                    if(!data.field.title) {
+                        layer.msg('Please select title', {icon: 2});
+                        return false;
+                    }
+                } else if(data.field.role === '3') {
+                    if(!data.field.admin_id) {
+                        layer.msg('Please enter admin ID', {icon: 2});
+                        return false;
+                    }
+                }
+                
+                // 显示加载层
+                var loadIndex = layer.load(2);
+                
+                // 准备提交数据
+                var submitData = {
+                    username: data.field.username,
+                    password: data.field.password,
+                    role: data.field.role,
+                    is_active: data.field.is_active === 'on',
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                };
+                
+                // 根据角色添加特有字段
+                if(data.field.role === '1') {
+                    submitData.student_id = data.field.student_id;
+                    submitData.college = data.field.college;
+                } else if(data.field.role === '2') {
+                    submitData.teacher_id = data.field.teacher_id;
+                    submitData.title = data.field.title;
+                } else if(data.field.role === '3') {
+                    submitData.admin_id = data.field.admin_id;
+                }
+                
+                // 发送AJAX请求
+                $.ajax({
+                    url: '/addUser/',
+                    type: 'POST',
+                    data: submitData,
+                    dataType: 'json',
+                    success: function(res){
+                        // 关闭加载层
+                        layer.close(loadIndex);
+                        
+                        if(res.success){
+                            layer.msg('Added successfully', {icon: 1});
+                            // 添加成功后跳转到用户列表页
+                            setTimeout(function(){
+                                window.location.href = '/userList/';
+                            }, 1000);
+                        } else {
+                            layer.msg(res.message || 'Add failed', {icon: 2});
+                        }
+                    },
+                    error: function(){
+                        // 关闭加载层
+                        layer.close(loadIndex);
+                        layer.msg('Server error, please try again later', {icon: 2});
+                    }
+                });
+                
+                return false; // 阻止表单默认提交
+            });
+            
+            // 取消按钮点击事件
+            $('#cancelBtn').on('click', function(){
+                window.location.href = '/userList/';
+            });
+            
+            // 渲染表单
+            form.render();
+        });
+    </script>
+</body>
+
+</html>

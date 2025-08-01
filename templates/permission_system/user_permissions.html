@@ -1,0 +1,90 @@
+{% extends 'permission_system/base.html' %}
+{% load static %}
+
+{% block title %}用户权限管理{% endblock %}
+
+{% block content %}
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header">用户权限管理 - {{ user.username }}</div>
+        <div class="layui-card-body">
+            <form class="layui-form" action="{% url 'permission_system:user_permissions' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" value="{{ user.id }}">
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label">用户角色</label>
+                    <div class="layui-input-block">
+                        <select name="role" lay-verify="required">
+                            <option value="">请选择角色</option>
+                            <option value="1" {% if user.role == 1 %}selected{% endif %}>学生</option>
+                            <option value="2" {% if user.role == 2 %}selected{% endif %}>教师</option>
+                            <option value="3" {% if user.role == 3 %}selected{% endif %}>管理员</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label">用户组</label>
+                    <div class="layui-input-block">
+                        {% for group in groups %}
+                        <input type="checkbox" name="groups" value="{{ group.id }}" title="{{ group.name }}" 
+                            {% if group in user_groups %}checked{% endif %} lay-skin="primary">
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="layui-form-item layui-form-text">
+                    <label class="layui-form-label">用户权限</label>
+                    <div class="layui-input-block">
+                        <table class="layui-table">
+                            <thead>
+                                <tr>
+                                    <th>选择</th>
+                                    <th>权限名称</th>
+                                    <th>权限代码</th>
+                                    <th>描述</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for permission in permissions %}
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" name="permissions" value="{{ permission.id }}" title=" " 
+                                            {% if permission in user_permissions %}checked{% endif %} lay-skin="primary">
+                                    </td>
+                                    <td>{{ permission.name }}</td>
+                                    <td>{{ permission.codename }}</td>
+                                    <td>{{ permission.content_type.app_label }}.{{ permission.content_type.model }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-submit lay-filter="formSubmit">保存</button>
+                        <a href="{% url 'permission_system:user_list' %}" class="layui-btn layui-btn-primary">返回</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+layui.use(['form', 'layer'], function(){
+    var form = layui.form;
+    var layer = layui.layer;
+    
+    // 表单提交
+    form.on('submit(formSubmit)', function(data){
+        return true;
+    });
+});
+</script>
+{% endblock %}

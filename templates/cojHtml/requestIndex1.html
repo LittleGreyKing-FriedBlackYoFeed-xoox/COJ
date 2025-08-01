@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>测试网页</title>
+</head>
+
+<body>
+    <div style="font-size: 22px;">
+        <label>工作空间: </label><input type="text" id="spacekey" placeholder="输入 spacekey">
+    </div>
+    <fieldset>
+        <legend>选择开发模式:</legend>
+        <div>
+            <input type="radio" name="mode" value="" checked><label>普通模式</label>
+        </div>
+        <div>
+            <input type="radio" name="mode" value="edit"><label>编辑模式</label>
+        </div>
+    </fieldset>
+    <br>
+    <div>
+        <button onclick="submit()">当前页面打开</button>
+        <button onclick="submit('_blank')">新页面打开</button>
+        <button onclick="submit('my_iframe')">嵌入式打开</button>
+    </div>
+    <br>
+    <iframe width="100%" height="600px" name="my_iframe"></iframe>
+    <script>
+        function submit(target) {
+            var spacekey = document.getElementById("spacekey").value;
+            var mode = document.querySelector('input[name="mode"]:checked').value;
+            var form = document.createElement("form")
+            form.setAttribute("method", "POST");
+            if (mode) {
+                form.setAttribute("action", `https://${spacekey}.ap-shanghai.cloudstudio.club/?mode=${mode}`);
+            } else {
+                form.setAttribute("action", `https://${spacekey}.ap-shanghai.cloudstudio.club/`);
+            }
+            if (target) {
+                form.setAttribute("target", target);
+            }
+            var input = document.createElement("input");
+            input.setAttribute("type", "hidden");
+            input.setAttribute("name", "token");
+            input.setAttribute("value", 'token-value');
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+        }
+    </script>
+</body>
+
+</html>
