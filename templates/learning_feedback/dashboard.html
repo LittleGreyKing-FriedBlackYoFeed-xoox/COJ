@@ -1,0 +1,431 @@
+{% extends "cojHtml/base.html" %}
+{% load static %}
+
+{% block title %}Learning Feedback Dashboard{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}">
+<script src="{% static 'js/jquery-3.7.1.js' %}"></script>
+<script src="{% static 'layui-v2.11.4/layui/layui.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<style>
+    .feedback-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        background-color: white;
+    }
+    .feedback-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+    .layui-card-header {
+        border-radius: 10px 10px 0 0;
+        font-weight: bold;
+        font-size: 16px;
+        padding: 15px;
+    }
+    .layui-card-body {
+        padding: 20px;
+    }
+    .strength-item {
+        background-color: #d4edda;
+        border-left: 4px solid #28a745;
+        padding: 12px 15px;
+        margin-bottom: 12px;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    .weakness-item {
+        background-color: #f8d7da;
+        border-left: 4px solid #dc3545;
+        padding: 12px 15px;
+        margin-bottom: 12px;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    .recommendation-item {
+        background-color: #cce5ff;
+        border-left: 4px solid #007bff;
+        padding: 12px 15px;
+        margin-bottom: 12px;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    .metric-card {
+        text-align: center;
+        padding: 20px 15px;
+    }
+    .metric-value {
+        font-size: 28px;
+        font-weight: bold;
+        color: #5c7cfa;
+        margin-bottom: 8px;
+    }
+    .metric-label {
+        font-size: 14px;
+        color: #6c757d;
+    }
+    .chart-container {
+        position: relative;
+        height: 320px;
+        margin-bottom: 20px;
+    }
+    .dashboard-header {
+        margin-bottom: 25px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
+    }
+    .dashboard-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    .dashboard-subtitle {
+        color: #6c757d;
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+    .layui-btn {
+        border-radius: 4px;
+    }
+    .layui-table {
+        margin-top: 0;
+    }
+    .layui-table th {
+        font-weight: bold;
+        background-color: #f8f9fa;
+    }
+    .layui-badge {
+        border-radius: 4px;
+        padding: 5px 10px;
+    }
+    .last-updated {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="layui-fluid">
+    <div class="dashboard-header">
+        <div class="layui-row">
+            <div class="layui-col-md8">
+                <h1 class="dashboard-title">Learning Feedback Dashboard</h1>
+                <p class="dashboard-subtitle">
+                    This dashboard provides personalized feedback on your learning progress, highlighting your strengths, 
+                    areas for improvement, and recommendations for further practice.
+                </p>
+                <div class="last-updated">
+                    Last updated: {{ feedback.last_updated|date:"Y-m-d H:i" }}
+                </div>
+            </div>
+            <div class="layui-col-md4" style="text-align: right;">
+                <button id="refreshFeedback" class="layui-btn layui-btn-normal">
+                    <i class="fas fa-sync-alt"></i> Refresh Feedback
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="layui-row layui-col-space20">
+        <div class="layui-col-md3">
+            <div class="layui-card feedback-card">
+                <div class="layui-card-body metric-card">
+                    <div class="metric-value">{{ stats.total_problems_solved }}</div>
+                    <div class="metric-label">Problems Solved</div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md3">
+            <div class="layui-card feedback-card">
+                <div class="layui-card-body metric-card">
+                    <div class="metric-value">{{ feedback.success_rate|floatformat:1 }}%</div>
+                    <div class="metric-label">Success Rate</div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md3">
+            <div class="layui-card feedback-card">
+                <div class="layui-card-body metric-card">
+                    <div class="metric-value">{{ feedback.average_completion_time|floatformat:0 }} ms</div>
+                    <div class="metric-label">Avg. Completion Time</div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md3">
+            <div class="layui-card feedback-card">
+                <div class="layui-card-body metric-card">
+                    <div class="metric-value">{{ knowledge_performances|length }}</div>
+                    <div class="metric-label">Knowledge Points Covered</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Summary -->
+    <div class="layui-row layui-col-space20">
+        <div class="layui-col-md4">
+            <div class="layui-card feedback-card">
+                <div class="layui-card-header" style="background-color: #28a745; color: white;">
+                    <i class="fas fa-star"></i> Your Strengths
+                </div>
+                <div class="layui-card-body">
+                    {% if feedback.strengths %}
+                        {% for strength in feedback.strengths_list %}
+                            <div class="strength-item">{{ strength }}</div>
+                        {% endfor %}
+                    {% else %}
+                        <p>No specific strengths identified yet. Keep practicing!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md4">
+            <div class="layui-card feedback-card">
+                <div class="layui-card-header" style="background-color: #dc3545; color: white;">
+                    <i class="fas fa-exclamation-triangle"></i> Areas for Improvement
+                </div>
+                <div class="layui-card-body">
+                    {% if feedback.weaknesses %}
+                        {% for weakness in feedback.weaknesses_list %}
+                            <div class="weakness-item">{{ weakness }}</div>
+                        {% endfor %}
+                    {% else %}
+                        <p>No specific weaknesses identified yet. Keep practicing!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md4">
+            <div class="layui-card feedback-card">
+                <div class="layui-card-header" style="background-color: #007bff; color: white;">
+                    <i class="fas fa-lightbulb"></i> Recommendations
+                </div>
+                <div class="layui-card-body">
+                    {% if feedback.recommendations %}
+                        {% for recommendation in feedback.recommendations_list %}
+                            <div class="recommendation-item">{{ recommendation }}</div>
+                        {% endfor %}
+                    {% else %}
+                        <p>No specific recommendations yet. Keep practicing!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Knowledge Point Performance -->
+    <div class="layui-row layui-col-space20">
+        <div class="layui-col-md6">
+            <div class="layui-card feedback-card">
+                <div class="layui-card-header" style="background-color: #17a2b8; color: white;">
+                    <i class="fas fa-chart-bar"></i> Knowledge Point Performance
+                </div>
+                <div class="layui-card-body">
+                    <div class="chart-container">
+                        <canvas id="knowledgePointChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md6">
+            <div class="layui-card feedback-card">
+                <div class="layui-card-header" style="background-color: #17a2b8; color: white;">
+                    <i class="fas fa-chart-line"></i> Performance Trends
+                </div>
+                <div class="layui-card-body">
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Knowledge Points Table -->
+    <div class="layui-row layui-col-space20">
+        <div class="layui-col-md12">
+            <div class="layui-card feedback-card">
+                <div class="layui-card-header" style="background-color: #6c757d; color: white;">
+                    <i class="fas fa-list"></i> Knowledge Points Detail
+                </div>
+                <div class="layui-card-body">
+                    <table class="layui-table">
+                        <thead>
+                            <tr>
+                                <th>Knowledge Point</th>
+                                <th>Problems Attempted</th>
+                                <th>Problems Solved</th>
+                                <th>Success Rate</th>
+                                <th>Avg. Attempts</th>
+                                <th>Avg. Time</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for kp in knowledge_performances %}
+                            <tr>
+                                <td>{{ kp.knowledge_point }}</td>
+                                <td>{{ kp.problems_attempted }}</td>
+                                <td>{{ kp.problems_solved }}</td>
+                                <td>
+                                    {% if kp.problems_attempted > 0 %}
+                                        <span class="layui-badge 
+                                            {% if kp.success_rate >= 80 %}layui-bg-green
+                                            {% elif kp.success_rate >= 50 %}layui-bg-blue
+                                            {% else %}layui-bg-orange{% endif %}">
+                                            {{ kp.success_rate|floatformat:1 }}%
+                                        </span>
+                                    {% else %}
+                                        <span class="layui-badge layui-bg-gray">0%</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ kp.average_attempts|floatformat:1 }}</td>
+                                <td>{{ kp.average_time|floatformat:0 }} ms</td>
+                                <td>
+                                    <a href="{% url 'learning_feedback:knowledge_point_detail' kp.knowledge_point %}" class="layui-btn layui-btn-xs layui-btn-normal">
+                                        <i class="fas fa-info-circle"></i> Details
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 30px;">
+                                    <i class="layui-icon layui-icon-face-surprised" style="font-size: 30px; color: var(--text-light);"></i>
+                                    <p style="margin-top: 10px;">No knowledge point data available yet.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Learning Path Button -->
+    <div class="layui-row" style="margin-top: 30px; margin-bottom: 30px;">
+        <div class="layui-col-md12" style="text-align: center;">
+            <a href="{% url 'learning_feedback:learning_path' %}" class="layui-btn layui-btn-lg layui-btn-normal">
+                <i class="fas fa-route"></i> Generate Personalized Learning Path
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        // Knowledge Point Chart
+        var knowledgePointData = JSON.parse('{{ knowledge_point_data|safe }}');
+        var knowledgePointCtx = document.getElementById('knowledgePointChart').getContext('2d');
+        var knowledgePointChart = new Chart(knowledgePointCtx, {
+            type: 'bar',
+            data: {
+                labels: knowledgePointData.labels,
+                datasets: [{
+                    label: 'Problems Attempted',
+                    data: knowledgePointData.attempted,
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Problems Solved',
+                    data: knowledgePointData.solved,
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Performance Trend Chart
+        var trendData = {
+            labels: JSON.parse('{{ performance_trends.weeks|safe }}'),
+            datasets: [{
+                label: 'Success Rate (%)',
+                data: JSON.parse('{{ performance_trends.success_rates|safe }}'),
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                yAxisID: 'y',
+                fill: true
+            }, {
+                label: 'Avg. Execution Time (ms)',
+                data: JSON.parse('{{ performance_trends.avg_times|safe }}'),
+                borderColor: 'rgba(153, 102, 255, 1)',
+                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                yAxisID: 'y1',
+                fill: true
+            }]
+        };
+        
+        var trendCtx = document.getElementById('trendChart').getContext('2d');
+        var trendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: trendData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Success Rate (%)'
+                        }
+                    },
+                    y1: {
+                        beginAtZero: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Execution Time (ms)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Refresh Feedback
+        $('#refreshFeedback').click(function() {
+            $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Refreshing...');
+            
+            $.ajax({
+                url: '{% url "learning_feedback:refresh_feedback" %}',
+                type: 'POST',
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.message);
+                        $('#refreshFeedback').prop('disabled', false).html('<i class="fas fa-sync-alt"></i> Refresh Feedback');
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while refreshing feedback.');
+                    $('#refreshFeedback').prop('disabled', false).html('<i class="fas fa-sync-alt"></i> Refresh Feedback');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

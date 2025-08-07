@@ -1,0 +1,1157 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Code Online Judge - 优雅简洁的代码评审平台">
+    <title>Code Online Judge Index</title>
+    <!-- 预加载关键资源 -->
+    <link rel="preload" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}" as="style">
+    <link rel="preload" href="{% static 'js/jquery-3.7.1.js' %}" as="script">
+    <link rel="preload" href="{% static 'layui-v2.11.4/layui/layui.js' %}" as="script">
+    <!-- 引入样式表 -->
+    <link rel="stylesheet" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}">
+    <style>
+        :root {
+            --light-gray: #f5f7fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --text-dark: #343a40;
+            --text-light: #6c757d;
+            --accent-color: #5c7cfa;
+            --border-color: #dee2e6;
+            --hover-bg: #e2e6ea;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-gray);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        /* 淡雅灰白导航栏样式 */
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: var(--text-dark);
+            font-size: 22px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .logo i {
+            margin-right: 12px;
+            font-size: 26px;
+            color: var(--accent-color);
+            background: linear-gradient(135deg, var(--accent-color), #748ffc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            height: 100%;
+        }
+
+        .nav-item {
+            position: relative;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-item>a {
+            color: var(--text-dark);
+            text-decoration: none;
+            padding: 0 18px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .nav-item>a:hover,
+        .nav-item>a.active {
+            color: var(--accent-color);
+            background-color: var(--light-gray);
+        }
+
+        .nav-item>a.active {
+            position: relative;
+        }
+
+        .nav-item>a.active::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 18px;
+            right: 18px;
+            height: 3px;
+            background-color: var(--accent-color);
+            border-radius: 2px 2px 0 0;
+        }
+
+        .nav-item>a i {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+
+        /* 优化后的下拉箭头样式 - 兼容Layui */
+        .dropdown-icon {
+            margin-left: 8px;
+            font-size: 12px !important;
+            transition: transform 0.3s ease;
+            display: inline-block;
+            width: 16px;
+            text-align: center;
+        }
+
+        .nav-item:hover .dropdown-icon {
+            transform: rotate(180deg);
+        }
+
+        .dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            z-index: 100;
+            border: 1px solid var(--border-color);
+        }
+
+        .nav-item:hover .dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: var(--text-dark);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .dropdown a:hover {
+            background-color: var(--light-gray);
+            color: var(--accent-color);
+            padding-left: 25px;
+        }
+
+        .dropdown a:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown a i {
+            width: 20px;
+            text-align: center;
+            margin-right: 12px;
+            color: var(--text-light);
+            font-size: 16px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-icon {
+            position: relative;
+            color: var(--text-dark);
+            font-size: 18px;
+            margin-left: 15px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-icon:hover {
+            color: var(--accent-color);
+            background-color: var(--light-gray);
+        }
+
+        .badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background-color: #ff6b6b;
+            color: white;
+            font-size: 11px;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            font-weight: 500;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            margin-left: 15px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #adb5bd, #868e96);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 10px;
+            border: 2px solid var(--medium-gray);
+        }
+
+        .user-name {
+            color: var(--text-dark);
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            z-index: 100;
+            margin-top: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .user-menu:hover .user-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .user-dropdown a {
+            display: flex;
+            align-items: center;
+            padding: 13px 20px;
+            color: var(--text-dark);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .user-dropdown a:hover {
+            background-color: var(--light-gray);
+            color: var(--accent-color);
+            padding-left: 25px;
+        }
+
+        .user-dropdown a i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+            color: var(--text-light);
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 32px;
+            height: 22px;
+            cursor: pointer;
+            margin-left: 20px;
+        }
+
+        .hamburger span {
+            width: 100%;
+            height: 3px;
+            background-color: var(--text-dark);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .content {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-header {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: var(--text-dark);
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .card-header i {
+            margin-right: 12px;
+            color: var(--accent-color);
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin-left: 15px;
+        }
+
+        .timeline::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 8px;
+            height: calc(100% - 16px);
+            width: 2px;
+            background-color: var(--medium-gray);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            padding-left: 30px;
+        }
+
+        .timeline-item::before {
+            content: "";
+            position: absolute;
+            left: -8px;
+            top: 8px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: white;
+            border: 3px solid var(--accent-color);
+        }
+
+        .timeline-date {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            font-size: 17px;
+            display: flex;
+            align-items: center;
+        }
+
+        .timeline-date i {
+            margin-right: 8px;
+            color: var(--accent-color);
+        }
+
+        .timeline-content {
+            background: var(--light-gray);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            transition: transform 0.3s ease;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-7px);
+        }
+
+        .feature-icon {
+            font-size: 32px;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(92, 124, 250, 0.1);
+        }
+
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+            font-size: 18px;
+        }
+
+        .feature-desc {
+            font-size: 15px;
+            color: var(--text-light);
+            line-height: 1.7;
+            flex-grow: 1;
+        }
+
+        .footer {
+            background-color: white;
+            color: var(--text-light);
+            text-align: center;
+            padding: 25px 15px;
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            font-size: 15px;
+        }
+
+        .welcome-section {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .welcome-text {
+            flex: 1;
+        }
+
+        .welcome-image {
+            flex: 1;
+            background: linear-gradient(135deg, #e2e6ea, #f1f3f5);
+            height: 250px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            font-size: 18px;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-snippet {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.1) 25%,
+                    transparent 25%, transparent 50%,
+                    rgba(255, 255, 255, 0.1) 50%,
+                    rgba(255, 255, 255, 0.1) 75%,
+                    transparent 75%);
+            background-size: 40px 40px;
+            opacity: 0.3;
+        }
+
+        .welcome-image-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .welcome-image-content i {
+            font-size: 60px;
+            color: #ced4da;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .welcome-image-content span {
+            font-size: 20px;
+            color: var(--dark-gray);
+            font-weight: 500;
+        }
+
+        @media (max-width: 992px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .nav-right .text-item {
+                display: none;
+            }
+
+            .welcome-section {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-container {
+                height: 60px;
+            }
+
+            .user-name {
+                display: none;
+            }
+
+            .user-avatar {
+                margin-right: 0;
+                width: 38px;
+                height: 38px;
+            }
+
+            .content {
+                margin: 20px auto;
+                padding: 0 15px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+
+        /* 新增的导航栏优化样式 */
+        .dropdown-header {
+            padding: 12px 20px;
+            background-color: var(--light-gray);
+            font-weight: 600;
+            color: var(--accent-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-item.has-dropdown>a {
+            padding-right: 28px;
+        }
+
+        /* 优化后的下拉箭头位置 - 兼容Layui */
+        .nav-item.has-dropdown>a .dropdown-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-item.has-dropdown:hover>a .dropdown-icon {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        /* 兼容Layui的图标样式 */
+        .layui-icon {
+            font-size: 18px;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <i class="layui-icon layui-icon-code-circle"></i>
+                Code Online Judge(LCTC)
+            </a>
+            <div class="nav-links">
+                <div class="nav-item">
+                    <a href="/" class="active"><i class="layui-icon layui-icon-home"></i>Home</a>
+                </div>
+
+                {% if request.session.user_role == 1 or request.session.user_role == 3 %}
+                <!-- 学生菜单 - 对学生和管理员可见 -->
+                <div class="nav-item has-dropdown">
+                    <a href="#">
+                        <i class="layui-icon layui-icon-engine"></i>Student
+                        <i class="layui-icon layui-icon-down dropdown-icon"></i>
+                    </a>
+                    <div class="dropdown">
+                        <a href="{% url 'student_practice:problem_list' %}"><i class="layui-icon layui-icon-template-1"></i>Problem Practice</a>
+                        <a href="/student/code_editing/"><i class="layui-icon layui-icon-fonts-code"></i>Code Editing</a>
+                        <a href="/student/code_editing/"><i class="layui-icon layui-icon-file"></i>Code Assistant</a>
+                        <a href="{% url 'coj:requestIndex' %}"><i class="layui-icon layui-icon-console"></i>Quality Assessment</a>
+                        <a href="/student/rankings/"><i class="layui-icon layui-icon-diamond"></i>Ranking System</a>
+                        <a href="{% url 'learning_feedback:dashboard' %}"><i class="layui-icon layui-icon-chart"></i>Learning Feedback</a>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if request.session.user_role == 2 or request.session.user_role == 3 %}
+                <!-- 教师菜单 - 仅对教师和管理员可见 -->
+                <div class="nav-item has-dropdown">
+                    <a href="#">
+                        <i class="layui-icon layui-icon-component"></i>Teacher
+                        <i class="layui-icon layui-icon-down dropdown-icon"></i>
+                    </a>
+                    <div class="dropdown">
+                        <a href="/problemList/"><i class="layui-icon layui-icon-list"></i>Problem Management</a>
+                        <a href="#"><i class="layui-icon layui-icon-template"></i>Organize Competitions</a>
+                        <a href="#"><i class="layui-icon layui-icon-cart"></i>Statistical Data</a>
+                        <a href="#"><i class="layui-icon layui-icon-file"></i>Code Plagiarism Check</a>
+                        <a href="#"><i class="layui-icon layui-icon-user"></i>Manual Review</a>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if request.session.user_role == 3 %}
+                <!-- 管理员菜单 - 仅对管理员可见 -->
+                <div class="nav-item has-dropdown">
+                    <a href="#">
+                        <i class="layui-icon layui-icon-app"></i>Administrator
+                        <i class="layui-icon layui-icon-down dropdown-icon"></i>
+                    </a>
+                    <div class="dropdown">
+                        <a href="/userList"><i class="layui-icon layui-icon-cellphone"></i>User Management</a>
+                        <a href="#"><i class="layui-icon layui-icon-template-1"></i>Log Management</a>
+                        <a href="/permissions/"><i class="layui-icon layui-icon-template"></i>Permission Control</a>
+                        <a href="{% url 'coj:learningData' %}"><i class="layui-icon layui-icon-template-1"></i>Learning Management</a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="nav-right">
+                {% if request.session.user_id %}
+                <!-- 已登录状态 -->
+
+                <div class="user-menu">
+                    <div class="user-avatar">
+                        {% if request.session.user_role == 1 %}
+                        学
+                        {% elif request.session.user_role == 2 %}
+                        教
+                        {% elif request.session.user_role == 3 %}
+                        管
+                        {% else %}
+                        {{ request.session.username|first|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="user-name">{{ request.session.username }}</div>
+                    <div class="user-dropdown">
+                        <a href="#"><i class="layui-icon layui-icon-username"></i>Profile</a>
+                        <a href="#"><i class="layui-icon layui-icon-notice"></i>Messages</a>
+                        <a href="#"><i class="layui-icon layui-icon-set"></i>Settings</a>
+                        <a href="javascript:;" id="logout-btn" class="logout-btn"><i
+                                class="layui-icon layui-icon-logout"></i>Logout</a>
+                    </div>
+                </div>
+                {% else %}
+                <!-- 未登录状态 -->
+                <div class="nav-item">
+                    <a href="javascript:;" id="register-btn" style="color: var(--accent-color);"><i
+                            class="layui-icon layui-icon-add-1"></i>Register</a>
+                </div>
+                <div class="nav-item">
+                    <a href="javascript:;" id="login-btn" style="color: var(--accent-color);"><i
+                            class="layui-icon layui-icon-user"></i>Login</a>
+                </div>
+                {% endif %}
+
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="content">
+        <div class="welcome-section">
+            <div class="welcome-text">
+                <h1 style="font-size: 36px; margin-bottom: 20px; color: var(--text-dark); line-height: 1.3;">
+                    <span style="color: var(--accent-color);">Elegant and concise</span> code review platform
+                </h1>
+                <p style="font-size: 18px; color: var(--text-light); margin-bottom: 25px;">
+                    Welcome to Code Online Judge, a modern code review and learning platform. We provide online review
+                    functions for multiple programming languages, supporting real-time feedback and detailed analysis.
+                </p>
+                <div style="display: flex; gap: 15px;">
+                    <button class="layui-btn layui-btn-normal"
+                        style="height: auto; padding: 12px 25px; font-size: 16px;"
+                        onclick="window.location.href='{% url 'coj:requestIndex' %}'">
+                        Quick Start
+                    </button>
+                    <button class="layui-btn layui-btn-primary"
+                        style="height: auto; padding: 12px 25px; font-size: 16px;">
+                        Learn More
+                    </button>
+                </div>
+            </div>
+            <div class="welcome-image">
+                <div class="code-snippet"></div>
+                <div class="welcome-image-content">
+                    <i class="layui-icon layui-icon-console" style="font-size: 60px; color: #ced4da;"></i>
+                    <span>Code Online Judge System</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <footer class="footer">
+        © 2025 Code Online Judge Copyright | Elegant code review platform
+    </footer>
+
+    <!-- 先引入jQuery -->
+    <script src="{% static 'js/jquery-3.7.1.js' %}"></script>
+    <!-- 再引入Layui -->
+    <script src="{% static 'layui-v2.11.4/layui/layui.js' %}"></script>
+    <script>
+        layui.use(['layer', 'form'], function () {
+            var layer = layui.layer;
+            var form = layui.form;
+
+            // 绑定退出登录按钮点击事件
+            $('.logout-btn').on('click', function () {
+                layer.confirm('确定要退出登录吗？', { icon: 3, title: '提示' }, function (index) {
+                    // 锁定界面并显示加载提示
+                    var loadingIndex = layer.load(2, { shade: [0.3, '#000'] });
+
+                    // 发送AJAX请求注销登录
+                    $.ajax({
+                        url: '/logout/',
+                        type: 'POST',
+                        data: {
+                            csrfmiddlewaretoken: '{{ csrf_token }}'
+                        },
+                        success: function (response) {
+                            // 关闭加载提示
+                            layer.close(loadingIndex);
+
+                            layer.msg('您已成功退出登录！');
+                            // 清除会话并刷新页面
+                            setTimeout(function () {
+                                window.location.href = '/';
+                            }, 1000);
+                        },
+                        error: function () {
+                            // 关闭加载提示
+                            layer.close(loadingIndex);
+
+                            layer.msg('退出登录失败，请稍后重试', { icon: 5 });
+                        }
+                    });
+                    layer.close(index);
+                });
+            });
+
+            // 角色切换功能已移除
+
+            // 登录弹窗
+            document.getElementById('login-btn').addEventListener('click', function () {
+                layer.open({
+                    type: 1,
+                    title: '用户登录',
+                    area: ['400px', 'auto'],
+                    content: `
+                        <form class="layui-form" action="/login/" method="post" style="padding: 20px;">
+                            {% csrf_token %}
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">用户类型</label>
+                                <div class="layui-input-block">
+                                    <select name="role" lay-verify="required">
+                                        <option value="student">学生</option>
+                                        <option value="teacher">教师</option>
+                                        <option value="admin">管理员</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">用户名</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="username" required lay-verify="required" placeholder="请输入用户名" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">密码</label>
+                                <div class="layui-input-block">
+                                    <input type="password" name="password" required lay-verify="required" placeholder="请输入密码" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <div class="layui-input-block">
+                                    <button class="layui-btn" lay-submit lay-filter="loginForm">登录</button>
+                                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                                </div>
+                            </div>
+                        </form>
+                    `,
+                    success: function (layero, index) {
+                        form.render();
+
+                        // 监听登录表单提交
+                        form.on('submit(loginForm)', function (data) {
+                            // 获取表单数据
+                            var formData = {
+                                username: data.field.username,
+                                password: data.field.password,
+                                role: data.field.role,
+                                csrfmiddlewaretoken: $('[name=csrfmiddlewaretoken]').val()
+                            };
+
+                            // 锁定界面并显示加载提示
+                            var loadingIndex = layer.load(2, { shade: [0.3, '#000'] });
+
+                            // 发送AJAX请求
+                            $.ajax({
+                                url: '/login/',
+                                type: 'POST',
+                                data: formData,
+                                dataType: 'json',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
+                                success: function (res) {
+                                    // 关闭加载提示
+                                    layer.close(loadingIndex);
+
+                                    if (res.success) {
+                                        layer.msg('登录成功', { icon: 6 });
+                                        setTimeout(function () {
+                                            window.location.reload();
+                                        }, 1000);
+                                    } else {
+                                        layer.msg(res.message || '登录失败', { icon: 5 });
+                                    }
+                                },
+                                error: function (xhr) {
+                                    // 关闭加载提示
+                                    layer.close(loadingIndex);
+
+                                    console.log('登录错误:', xhr.responseText);
+                                    layer.msg('登录请求失败，请稍后重试', { icon: 5 });
+                                }
+                            });
+
+                            return false; // 阻止表单默认提交
+                        });
+                    }
+                });
+            });
+
+            // 注册弹窗
+            document.getElementById('register-btn').addEventListener('click', function () {
+                layer.open({
+                    type: 1,
+                    title: '用户注册',
+                    area: ['500px', 'auto'],
+                    content: `
+                        <form class="layui-form" action="/register/" method="post" style="padding: 20px;">
+                            {% csrf_token %}
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">用户类型</label>
+                                <div class="layui-input-block">
+                                    <select name="role" lay-verify="required" lay-filter="userType">
+                                        <option value="student">学生</option>
+                                        <option value="teacher">教师</option>
+                                        <option value="admin">管理员</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">用户名</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="username" required lay-verify="required" placeholder="请输入用户名" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">密码</label>
+                                <div class="layui-input-block">
+                                    <input type="password" name="password" required lay-verify="required" placeholder="请输入密码" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">确认密码</label>
+                                <div class="layui-input-block">
+                                    <input type="password" name="confirmPassword" required lay-verify="required" placeholder="请再次输入密码" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item student-field">
+                                <label class="layui-form-label">学号</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="student_id" placeholder="请输入学号" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item student-field">
+                                <label class="layui-form-label">学院</label>
+                                <div class="layui-input-block">
+                                    <select name="college" lay-verify="required">
+                                        <option value="信息学院">信息学院</option>
+                                        <option value="医学院">医学院</option>
+                                        <option value="文学院">文学院</option>
+                                        <option value="理学院">理学院</option>
+                                        <option value="工学院">工学院</option>
+                                        <option value="商学院">商学院</option>
+                                        <option value="法学院">法学院</option>
+                                        <option value="艺术学院">艺术学院</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="layui-form-item teacher-field" style="display:none;">
+                                <label class="layui-form-label">工号</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="teacher_id" placeholder="请输入工号" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item teacher-field" style="display:none;">
+                                <label class="layui-form-label">职称</label>
+                                <div class="layui-input-block">
+                                    <select name="title" lay-verify="required">
+                                        <option value="未定级">未定级</option>
+                                        <option value="助教">助教</option>
+                                        <option value="讲师">讲师</option>
+                                        <option value="副教授">副教授</option>
+                                        <option value="教授">教授</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="layui-form-item admin-field" style="display:none;">
+                                <label class="layui-form-label">管理员编号</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="admin_id" placeholder="请输入管理员编号" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <div class="layui-input-block">
+                                    <button class="layui-btn" lay-submit lay-filter="registerForm">注册</button>
+                                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                                </div>
+                            </div>
+                        </form>
+                    `,
+                    success: function (layero, index) {
+                        form.render();
+                        form.on('select(userType)', function (data) {
+                            if (data.value === 'student') {
+                                $('.student-field').show();
+                                $('.teacher-field').hide();
+                                $('.admin-field').hide();
+                            } else if (data.value === 'teacher') {
+                                $('.student-field').hide();
+                                $('.teacher-field').show();
+                                $('.admin-field').hide();
+                            } else if (data.value === 'admin') {
+                                $('.student-field').hide();
+                                $('.teacher-field').hide();
+                                $('.admin-field').show();
+                            }
+                            form.render();
+                        });
+
+                        // 监听注册表单提交
+                        form.on('submit(registerForm)', function (data) {
+                            // 验证两次密码是否一致
+                            if (data.field.password !== data.field.confirmPassword) {
+                                layer.msg('两次输入的密码不一致', { icon: 5 });
+                                return false;
+                            }
+
+                            // 获取表单数据
+                            var formData = {
+                                username: data.field.username,
+                                password: data.field.password,
+                                role: data.field.role,
+                                csrfmiddlewaretoken: $('[name=csrfmiddlewaretoken]').val()
+                            };
+
+                            // 根据用户类型添加额外字段
+                            if (data.field.role === 'student') {
+                                formData.student_id = data.field.student_id;
+                                formData.college = data.field.college;
+                            } else if (data.field.role === 'teacher') {
+                                formData.teacher_id = data.field.teacher_id;
+                                formData.title = data.field.title;
+                            } else if (data.field.role === 'admin') {
+                                formData.admin_id = data.field.admin_id;
+                            }
+
+                            // 锁定界面并显示加载提示
+                            var loadingIndex = layer.load(2, { shade: [0.3, '#000'] });
+
+                            // 发送AJAX请求
+                            $.ajax({
+                                url: '/register/',
+                                type: 'POST',
+                                data: formData,
+                                dataType: 'json',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
+                                success: function (res) {
+                                    // 关闭加载提示
+                                    layer.close(loadingIndex);
+
+                                    if (res.success) {
+                                        layer.msg('注册成功，请登录', { icon: 6 });
+                                        setTimeout(function () {
+                                            layer.closeAll();
+                                            // 自动打开登录窗口
+                                            document.getElementById('login-btn').click();
+                                        }, 1500);
+                                    } else {
+                                        layer.msg(res.error || '注册失败', { icon: 5 });
+                                    }
+                                },
+                                error: function () {
+                                    // 关闭加载提示
+                                    layer.close(loadingIndex);
+
+                                    layer.msg('注册请求失败，请稍后重试', { icon: 5 });
+                                }
+                            });
+
+                            return false; // 阻止表单默认提交
+                        });
+                    }
+                });
+            });
+
+            // 退出登录功能
+            function logoutUser() {
+                layer.confirm('确定要退出登录吗？', { icon: 3, title: '提示' }, function (index) {
+                    // 发送AJAX请求注销登录
+                    $.ajax({
+                        url: '/logout/',
+                        type: 'POST',
+                        data: {
+                            csrfmiddlewaretoken: '{{ csrf_token }}'
+                        },
+                        success: function (response) {
+                            layer.msg('您已成功退出登录！');
+                            // 清除会话并刷新页面
+                            setTimeout(function () {
+                                window.location.href = '/';
+                            }, 1000);
+                        },
+                        error: function () {
+                            layer.msg('退出登录失败，请稍后重试', { icon: 5 });
+                        }
+                    });
+                    layer.close(index);
+                });
+            }
+
+                    // 移动端菜单切换
+                    document.querySelector('.hamburger').addEventListener('click', function () {
+                        this.classList.toggle('active');
+                        const navLinks = document.querySelector('.nav-links');
+                        navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
+                    });
+
+            // 卡片悬停效果增强
+            const featureCards = document.querySelectorAll('.feature-card');
+            featureCards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.style.boxShadow = '0 12px 25px rgba(0, 0, 0, 0.1)';
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    card.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.04)';
+                });
+            });
+
+
+
+            // 导航栏下拉效果
+            const navItems = document.querySelectorAll('.nav-item.has-dropdown');
+            navItems.forEach(function (item) {
+                item.addEventListener('mouseenter', function () {
+                    const dropdown = this.querySelector('.dropdown');
+                    dropdown.style.display = 'block';
+                    setTimeout(function () {
+                        dropdown.style.opacity = '1';
+                        dropdown.style.visibility = 'visible';
+                        dropdown.style.transform = 'translateY(0)';
+                    }, 10);
+                });
+
+                item.addEventListener('mouseleave', function () {
+                    const dropdown = this.querySelector('.dropdown');
+                    dropdown.style.opacity = '0';
+                    dropdown.style.visibility = 'hidden';
+                    dropdown.style.transform = 'translateY(10px)';
+                    setTimeout(function () {
+                        dropdown.style.display = 'none';
+                    }, 300);
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

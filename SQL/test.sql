@@ -1,0 +1,1 @@
+SELECT * FROM own_models_user;

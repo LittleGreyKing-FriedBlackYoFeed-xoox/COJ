@@ -1,0 +1,324 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="renderer" content="webkit">
+    <!-- 预加载关键资源 -->
+    <link rel="preload" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}" as="style">
+    <link rel="preload" href="{% static 'js/jquery-3.7.1.js' %}" as="script">
+    <link rel="preload" href="{% static 'layui-v2.11.4/layui/layui.js' %}" as="script">
+    <!-- 引入Layui CSS -->
+    <link rel="stylesheet" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}">
+    <title>User Registration</title>
+    <style>
+        .register-container {
+            width: 400px;
+            margin: 100px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .register-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .layui-form-item {
+            margin-bottom: 20px;
+        }
+        
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .login-footer a {
+            color: #01AAED;
+            text-decoration: none;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* 添加加载动画样式 */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.7);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #01AAED;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 加载动画 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="register-container">
+        <h2 class="register-title">User Registration</h2>
+        <form class="layui-form" action="/register/" method="post">
+            {% csrf_token %}
+            <!-- 用户角色选择 -->
+            <div class="layui-form-item">
+                <label class="layui-form-label">User Type</label>
+                <div class="layui-input-block">
+                    <select name="role" lay-verify="required" lay-filter="roleSelect">
+                        <option value="">Select User Type</option>
+                        <option value="student">Student</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 基本信息 -->
+            <div class="layui-form-item">
+                <label class="layui-form-label">Username</label>
+                <div class="layui-input-block">
+                    <input type="text" name="username" required lay-verify="required" placeholder="Enter username"
+                        autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">Password</label>
+                <div class="layui-input-block">
+                    <input type="password" name="password" required lay-verify="required" placeholder="Enter password"
+                        autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">Confirm Password</label>
+                <div class="layui-input-block">
+                    <input type="password" name="repassword" required lay-verify="required"
+                        placeholder="Confirm password" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <!-- Student specific fields -->
+            <div class="student-fields" style="display:none;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Student ID</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="student_id" placeholder="Enter student ID" autocomplete="off"
+                            class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">College</label>
+                    <div class="layui-input-block">
+                        <select name="college">
+                            <option value="">Select college</option>
+                            <option value="信息学院">College of Information</option>
+                            <option value="医学院">College of Medicine</option>
+                            <option value="文学院">College of Arts</option>
+                            <option value="理学院">College of Science</option>
+                            <option value="工学院">College of Engineering</option>
+                            <option value="商学院">College of Business</option>
+                            <option value="法学院">College of Law</option>
+                            <option value="艺术学院">College of Art</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teacher specific fields -->
+            <div class="teacher-fields" style="display:none;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Teacher ID</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="teacher_id" placeholder="Enter teacher ID" autocomplete="off"
+                            class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Title</label>
+                    <div class="layui-input-block">
+                        <select name="title">
+                            <option value="">Select title</option>
+                            <option value="未定级">Unrated</option>
+                            <option value="助教">Teaching Assistant</option>
+                            <option value="讲师">Lecturer</option>
+                            <option value="副教授">Associate Professor</option>
+                            <option value="教授">Professor</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Admin specific fields -->
+            <div class="admin-fields" style="display:none;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Admin ID</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="admin_id" placeholder="Enter admin ID" autocomplete="off"
+                            class="layui-input">
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="registerSubmit">Register</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">Reset</button>
+                </div>
+            </div>
+            
+            {% if error_message %}
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <div class="layui-bg-red" style="padding: 10px; border-radius: 4px;">{{ error_message }}</div>
+                </div>
+            </div>
+            {% endif %}
+        </form>
+        
+        <div class="login-footer">
+            Already have an account? <a href="/login/">Login now</a>
+        </div>
+    </div>
+
+    <!-- 先引入jQuery -->
+    <script src="{% static 'js/jquery-3.7.1.js' %}"></script>
+    <!-- 再引入Layui -->
+    <script src="{% static 'layui-v2.11.4/layui/layui.js' %}"></script>
+
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化Layui模块
+            layui.use(['form', 'layer'], function () {
+                var form = layui.form;
+                var layer = layui.layer;
+
+                // 监听角色选择变化
+                form.on('select(roleSelect)', function (data) {
+                    var role = data.value;
+                    // 隐藏所有特有字段
+                    $('.student-fields, .teacher-fields, .admin-fields').hide();
+
+                    // 显示所选角色的字段
+                    if (role === 'student') {
+                        $('.student-fields').show();
+                    } else if (role === 'teacher') {
+                        $('.teacher-fields').show();
+                    } else if (role === 'admin') {
+                        $('.admin-fields').show();
+                    }
+
+                    // 重新渲染表单
+                    form.render();
+                });
+
+                // 处理表单提交
+                form.on('submit(registerSubmit)', function (data) {
+                    // 验证密码匹配
+                    if (data.field.password !== data.field.repassword) {
+                        layer.msg('The two password entries do not match', { icon: 5 });
+                        return false;
+                    }
+
+                    // 根据用户类型验证字段
+                    if (data.field.role === 'student') {
+                        if (!data.field.student_id) {
+                            layer.msg('Please enter student ID', { icon: 5 });
+                            return false;
+                        }
+                        if (!data.field.college) {
+                            layer.msg('Please select college', { icon: 5 });
+                            return false;
+                        }
+                    } else if (data.field.role === 'teacher') {
+                        if (!data.field.teacher_id) {
+                            layer.msg('Please enter teacher ID', { icon: 5 });
+                            return false;
+                        }
+                        if (!data.field.title) {
+                            layer.msg('Please select title', { icon: 5 });
+                            return false;
+                        }
+                    } else if (data.field.role === 'admin') {
+                        if (!data.field.admin_id) {
+                            layer.msg('Please enter admin ID', { icon: 5 });
+                            return false;
+                        }
+                    } else {
+                        layer.msg('Please select user type', { icon: 5 });
+                        return false;
+                    }
+
+                    // 显示加载动画
+                    document.getElementById('loadingOverlay').style.display = 'flex';
+                    
+                    // 使用AJAX提交表单
+                    $.ajax({
+                        url: '/register/',
+                        type: 'POST',
+                        data: data.field,
+                        dataType: 'json',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        success: function(res) {
+                            // 隐藏加载动画
+                            document.getElementById('loadingOverlay').style.display = 'none';
+                            
+                            if(res.success) {
+                                layer.msg('Registration successful', {icon: 6});
+                                // 注册成功后跳转到登录页面
+                                setTimeout(function() {
+                                    window.location.href = '/login/';
+                                }, 1000);
+                            } else {
+                                layer.msg(res.error || 'Registration failed', {icon: 5});
+                            }
+                        },
+                        error: function() {
+                            // 隐藏加载动画
+                            document.getElementById('loadingOverlay').style.display = 'none';
+                            layer.msg('Server error, please try again later', {icon: 5});
+                        }
+                    });
+
+                    return false; // 阻止表单默认提交
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

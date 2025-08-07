@@ -1,0 +1,482 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Code Online Judge - 提交详情">
+    <title>提交详情 - Code Online Judge</title>
+    <!-- 预加载关键资源 -->
+    <link rel="preload" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}" as="style">
+    <link rel="preload" href="{% static 'js/jquery-3.7.1.js' %}" as="script">
+    <link rel="preload" href="{% static 'layui-v2.11.4/layui/layui.js' %}" as="script">
+    <!-- 引入样式表 -->
+    <link rel="stylesheet" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}">
+    <!-- 引入代码高亮 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/github.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/languages/python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/languages/java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/languages/cpp.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/languages/javascript.min.js"></script>
+    <style>
+        :root {
+            --light-gray: #f5f7fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --text-dark: #343a40;
+            --text-light: #6c757d;
+            --accent-color: #5c7cfa;
+            --border-color: #dee2e6;
+            --hover-bg: #e2e6ea;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-gray);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        /* 淡雅灰白导航栏样式 */
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: var(--text-dark);
+            font-size: 22px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .logo i {
+            margin-right: 12px;
+            font-size: 26px;
+            color: var(--accent-color);
+            background: linear-gradient(135deg, var(--accent-color), #748ffc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .content {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .breadcrumb {
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border-color);
+        }
+
+        .breadcrumb a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .submission-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .submission-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .submission-meta {
+            display: flex;
+            gap: 15px;
+        }
+
+        .submission-meta-item {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .submission-meta-item i {
+            margin-right: 5px;
+        }
+
+        .status-accepted {
+            color: #28a745;
+        }
+
+        .status-wrong {
+            color: #dc3545;
+        }
+
+        .status-pending {
+            color: #fd7e14;
+        }
+
+        .submission-section {
+            margin-bottom: 25px;
+        }
+
+        .submission-section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        .code-block {
+            background-color: var(--light-gray);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .code-block pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: var(--medium-gray);
+            border-radius: 8px 8px 0 0;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+        }
+
+        .code-language {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .code-actions button, .code-actions a {
+            margin-left: 10px;
+        }
+
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .result-table th, .result-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .result-table th {
+            background-color: var(--light-gray);
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .result-table tr:hover {
+            background-color: var(--light-gray);
+        }
+
+        .error-details {
+            margin-bottom: 15px; 
+            padding: 15px; 
+            background-color: rgba(220, 53, 69, 0.1); 
+            border: 1px solid #dc3545; 
+            border-radius: 8px;
+        }
+
+        .error-details h3 {
+            font-size: 16px; 
+            margin-bottom: 10px; 
+            color: #dc3545;
+        }
+
+        .error-details pre {
+            background-color: rgba(0, 0, 0, 0.05); 
+            padding: 10px; 
+            border-radius: 4px; 
+            overflow-x: auto;
+        }
+
+        .footer {
+            background-color: white;
+            color: var(--text-light);
+            text-align: center;
+            padding: 25px 15px;
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            font-size: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                margin: 20px auto;
+                padding: 0 15px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .submission-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .submission-meta {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <i class="layui-icon layui-icon-code-circle"></i>
+                Code Online Judge(LCTC)
+            </a>
+        </div>
+    </header>
+
+    <div class="content">
+        <!-- 面包屑导航 -->
+        <div class="breadcrumb">
+            <span><a href="/">首页</a></span>
+            <span> / </span>
+            <span><a href="{% url 'student_practice:problem_list' %}">题目练习</a></span>
+            <span> / </span>
+            <span><a href="{% url 'student_practice:problem_detail' submission.problem.id %}">{{ submission.problem.title }}</a></span>
+            <span> / </span>
+            <span>提交详情</span>
+        </div>
+
+        <!-- 提交详情卡片 -->
+        <div class="card">
+            <div class="submission-header">
+                <h1 class="submission-title">提交详情 #{{ submission.id }}</h1>
+                <div class="submission-meta">
+                    <div class="submission-meta-item">
+                        <i class="layui-icon layui-icon-time"></i>
+                        {{ submission.created_at|date:"Y-m-d H:i:s" }}
+                    </div>
+                    <div class="submission-meta-item">
+                        <i class="layui-icon layui-icon-template-1"></i>
+                        {{ submission.get_language_display }}
+                    </div>
+                    <div class="submission-meta-item">
+                        {% if submission.status == 'accepted' %}
+                        <i class="layui-icon layui-icon-ok-circle"></i>
+                        <span class="status-accepted">通过</span>
+                        {% elif submission.status == 'pending' %}
+                        <i class="layui-icon layui-icon-loading"></i>
+                        <span class="status-pending">评测中</span>
+                        {% else %}
+                        <i class="layui-icon layui-icon-close-fill"></i>
+                        <span class="status-wrong">未通过</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 提交结果 -->
+            <div class="submission-section">
+                <h2 class="submission-section-title">评测结果</h2>
+                
+                {% if submission.status != 'accepted' and submission.error_message %}
+                <div class="error-details">
+                    <h3>错误详情</h3>
+                    <pre>{{ submission.error_message }}</pre>
+                </div>
+                {% endif %}
+                
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>状态</th>
+                            <th>执行时间</th>
+                            <th>内存使用</th>
+                            <th>提交时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                {% if submission.status == 'accepted' %}
+                                <span class="status-accepted"><i class="layui-icon layui-icon-ok-circle"></i> 通过</span>
+                                {% elif submission.status == 'pending' %}
+                                <span class="status-pending"><i class="layui-icon layui-icon-loading"></i> 评测中</span>
+                                {% else %}
+                                <span class="status-wrong"><i class="layui-icon layui-icon-close-fill"></i> {{ submission.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ submission.execution_time }} ms</td>
+                            <td>{{ submission.memory_used }} KB</td>
+                            <td>{{ submission.created_at|date:"Y-m-d H:i:s" }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 提交的代码 -->
+            <div class="submission-section">
+                <h2 class="submission-section-title">提交的代码</h2>
+                <div class="code-header">
+                    <div class="code-language">{{ submission.get_language_display }}</div>
+                    <div class="code-actions">
+                        <button class="layui-btn layui-btn-xs" id="copy-code">复制代码</button>
+                        <a href="{% url 'student_practice:problem_detail' submission.problem.id %}#submit" class="layui-btn layui-btn-xs layui-btn-normal">编辑此代码</a>
+                    </div>
+                </div>
+                <div class="code-block" id="codeDisplay">
+                    <pre><code class="language-{{ submission.language }}">{{ submission.code }}</code></pre>
+                </div>
+            </div>
+
+            <!-- 测试用例结果 -->
+            {% if test_cases %}
+            <div class="submission-section">
+                <h2 class="submission-section-title">测试用例结果</h2>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>状态</th>
+                            <th>执行时间</th>
+                            <th>内存使用</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for case in test_cases %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                {% if case.status == 'passed' %}
+                                <span class="status-accepted"><i class="layui-icon layui-icon-ok-circle"></i> 通过</span>
+                                {% else %}
+                                <span class="status-wrong"><i class="layui-icon layui-icon-close-fill"></i> {{ case.error_message|default:"未通过" }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ case.execution_time }} ms</td>
+                            <td>{{ case.memory_used }} KB</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            <!-- 操作按钮 -->
+            <div style="margin-top: 20px;">
+                <a href="{% url 'student_practice:problem_detail' submission.problem.id %}" class="layui-btn layui-btn-primary">返回题目</a>
+                <a href="{% url 'student_practice:problem_detail' submission.problem.id %}#submit" class="layui-btn">重新提交</a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        © 2025 Code Online Judge Copyright | Elegant code review platform
+    </footer>
+
+    <!-- 先引入jQuery -->
+    <script src="{% static 'js/jquery-3.7.1.js' %}"></script>
+    <!-- 再引入Layui -->
+    <script src="{% static 'layui-v2.11.4/layui/layui.js' %}"></script>
+    <script>
+        layui.use(['layer'], function() {
+            var layer = layui.layer;
+            
+            // 初始化代码高亮
+            document.addEventListener('DOMContentLoaded', function() {
+                hljs.highlightAll();
+            });
+            
+            // 复制代码功能
+            document.getElementById('copy-code').addEventListener('click', function() {
+                var codeText = document.querySelector('.code-block code').textContent;
+                
+                // 创建临时textarea元素
+                var textarea = document.createElement('textarea');
+                textarea.value = codeText;
+                document.body.appendChild(textarea);
+                
+                // 选择并复制文本
+                textarea.select();
+                document.execCommand('copy');
+                
+                // 移除临时元素
+                document.body.removeChild(textarea);
+                
+                // 显示提示
+                layer.msg('代码已复制到剪贴板', {icon: 1});
+            });
+            
+            // 如果状态是评测中，定时刷新页面
+            {% if submission.status == 'pending' %}
+            setTimeout(function() {
+                window.location.reload();
+            }, 3000);
+            {% endif %}
+        });
+    </script>
+</body>
+
+</html>

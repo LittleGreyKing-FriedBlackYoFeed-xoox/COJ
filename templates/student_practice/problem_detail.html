@@ -1,0 +1,1183 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Code Online Judge - Problem Details">
+    <title>{{ problem.title }} - Code Online Judge</title>
+    <!-- Preload key resources -->
+    <link rel="preload" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}" as="style">
+    <link rel="preload" href="{% static 'js/jquery-3.7.1.js' %}" as="script">
+    <link rel="preload" href="{% static 'layui-v2.11.4/layui/layui.js' %}" as="script">
+    <!-- Add page cache control -->
+    <meta http-equiv="Cache-Control" content="max-age=3600">
+    <!-- Add theme color for mobile browsers -->
+    <meta name="theme-color" content="#5c7cfa">
+    <!-- Import stylesheets -->
+    <link rel="stylesheet" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}">
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/lib/codemirror.min.css" as="style">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/lib/codemirror.min.js" as="script">
+    
+    <!-- CodeMirror stylesheets -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/lib/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/theme/idea.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/addon/hint/show-hint.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/addon/display/fullscreen.css">
+    
+    <!-- CodeMirror scripts with defer for better performance -->
+    <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/lib/codemirror.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/mode/python/python.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/mode/clike/clike.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/mode/javascript/javascript.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/addon/edit/matchbrackets.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/addon/edit/closebrackets.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/addon/hint/show-hint.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/addon/hint/anyword-hint.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/addon/display/fullscreen.js"></script>
+    <style>
+        /* Add loading animation style */
+        .submit-loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-right: 5px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Add skeleton loading animation for content */
+        @keyframes shimmer {
+            0% { background-position: -468px 0 }
+            100% { background-position: 468px 0 }
+        }
+        
+        .skeleton {
+            background: linear-gradient(to right, #f6f7f8 8%, #edeef1 18%, #f6f7f8 33%);
+            background-size: 800px 104px;
+            animation: shimmer 1.5s linear infinite;
+            border-radius: 4px;
+            height: 20px;
+            margin-bottom: 10px;
+        }
+        :root {
+            --light-gray: #f5f7fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --text-dark: #343a40;
+            --text-light: #6c757d;
+            --accent-color: #5c7cfa;
+            --border-color: #dee2e6;
+            --hover-bg: #e2e6ea;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-gray);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        /* Elegant gray-white navigation bar style */
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-link:hover {
+            background-color: var(--light-gray);
+        }
+        
+        .nav-link i {
+            margin-right: 6px;
+            color: var(--accent-color);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: var(--text-dark);
+            font-size: 22px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .logo i {
+            margin-right: 12px;
+            font-size: 26px;
+            color: var(--accent-color);
+            background: linear-gradient(135deg, var(--accent-color), #748ffc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .content {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .breadcrumb {
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border-color);
+        }
+
+        .breadcrumb a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .problem-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .problem-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .problem-meta {
+            display: flex;
+            gap: 15px;
+        }
+
+        .problem-meta-item {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .problem-meta-item i {
+            margin-right: 5px;
+        }
+
+        .difficulty-easy {
+            color: #28a745;
+        }
+
+        .difficulty-medium {
+            color: #fd7e14;
+        }
+
+        .difficulty-hard {
+            color: #dc3545;
+        }
+
+        .tab-container {
+            margin-top: 20px;
+        }
+
+        .tab-content {
+            padding: 20px 0;
+        }
+
+        .problem-section {
+            margin-bottom: 25px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .problem-section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+            border-left: 3px solid var(--accent-color);
+            padding-left: 10px;
+        }
+
+        .code-block {
+            background-color: var(--light-gray);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+            border: 1px solid var(--border-color);
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        
+        .code-block:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .code-block pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        /* Add copy button to code blocks */
+        .code-block .copy-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .code-block:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .submission-form {
+            margin-top: 20px;
+        }
+
+        .CodeMirror {
+            height: 400px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .CodeMirror:focus-within {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(92, 124, 250, 0.1);
+        }
+        
+        /* Ensure code editor line numbers are displayed separately from code */
+        .CodeMirror-gutters {
+            background-color: #f5f5f5;
+            border-right: 1px solid #ddd;
+            padding-right: 5px;
+        }
+        
+        .CodeMirror-linenumber {
+            color: #999;
+            padding: 0 5px;
+        }
+        
+        /* Editor toolbar */
+        .editor-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+        
+        .editor-toolbar button {
+            margin-left: 5px;
+            padding: 4px 8px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .editor-toolbar button:hover {
+            background: var(--light-gray);
+        }
+
+        .submission-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .submission-table th, .submission-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .submission-table th {
+            background-color: var(--light-gray);
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .submission-table tr:hover {
+            background-color: var(--light-gray);
+        }
+
+        .status-accepted {
+            color: #28a745;
+        }
+
+        .status-wrong {
+            color: #dc3545;
+        }
+
+        .status-pending {
+            color: #fd7e14;
+        }
+
+        .footer {
+            background-color: white;
+            color: var(--text-light);
+            text-align: center;
+            padding: 25px 15px;
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            font-size: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                margin: 20px auto;
+                padding: 0 15px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .problem-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .problem-meta {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <i class="layui-icon layui-icon-code-circle"></i>
+                Code Online Judge(LCTC)
+            </a>
+            <div class="nav-links">
+                <a href="{% url 'student_practice:problem_list' %}" class="nav-link">
+                    <i class="layui-icon layui-icon-list"></i> Problems
+                </a>
+                <a href="{% url 'student_practice:statistics' %}" class="nav-link">
+                    <i class="layui-icon layui-icon-chart"></i> Statistics
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="content">
+        <!-- Breadcrumb navigation -->
+        <div class="breadcrumb">
+            <span><a href="/">Home</a></span>
+            <span> / </span>
+            <span><a href="{% url 'student_practice:problem_list' %}">Problem Practice</a></span>
+            <span> / </span>
+            <span>{{ problem.title }}</span>
+        </div>
+
+        <!-- Problem detail card -->
+        <div class="card">
+            <div class="problem-header">
+                <h1 class="problem-title">{{ problem.title }}</h1>
+                    <div class="problem-meta">
+                        <div class="problem-meta-item">
+                            <i class="layui-icon layui-icon-template-1"></i>
+                            {{ problem.problem_type_text }}
+                        </div>
+                        <div class="problem-meta-item">
+                            <i class="layui-icon layui-icon-read"></i>
+                            {{ problem.knowledge_point|default:"General" }}
+                        </div>
+                        <div class="problem-meta-item">
+                            {% if problem.difficulty == 1 %}
+                            <i class="layui-icon layui-icon-rate"></i>
+                            <span class="difficulty-easy">Easy</span>
+                            {% elif problem.difficulty == 2 %}
+                            <i class="layui-icon layui-icon-rate-half"></i>
+                            <span class="difficulty-medium">Medium</span>
+                            {% else %}
+                            <i class="layui-icon layui-icon-rate-solid"></i>
+                            <span class="difficulty-hard">Hard</span>
+                            {% endif %}
+                        </div>
+                    <div class="problem-meta-item">
+                        <i class="layui-icon layui-icon-chart"></i>
+                        Submissions: {{ problem.submission_count }}
+                    </div>
+                    <div class="problem-meta-item">
+                        <i class="layui-icon layui-icon-ok-circle"></i>
+                        Accepted: {{ problem.accepted_count }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tab-container">
+                <div class="layui-tab layui-tab-brief" lay-filter="problemTab">
+                    <ul class="layui-tab-title">
+                        <li class="layui-this">Problem Description</li>
+                        <li>Submit Code</li>
+                        <li>Submission History</li>
+                        <li>Statistics</li>
+                    </ul>
+                    <div class="layui-tab-content">
+                        <!-- Problem description -->
+                        <div class="layui-tab-item layui-show">
+                            <div class="problem-section">
+                                <h2 class="problem-section-title">Problem Description</h2>
+                                <div>{{ problem.description|safe }}</div>
+                            </div>
+
+                            {% if problem.input_description %}
+                            <div class="problem-section">
+                                <h2 class="problem-section-title">Input Description</h2>
+                                <div>{{ problem.input_description|safe }}</div>
+                            </div>
+                            {% endif %}
+
+                            {% if problem.output_description %}
+                            <div class="problem-section">
+                                <h2 class="problem-section-title">Output Description</h2>
+                                <div>{{ problem.output_description|safe }}</div>
+                            </div>
+                            {% endif %}
+
+                            {% if problem.sample_input and problem.sample_output %}
+                            <div class="problem-section">
+                                <h2 class="problem-section-title">Example</h2>
+                                <div>
+                                    <h3 style="font-size: 16px; margin-top: 10px;">Input:</h3>
+                                    <div class="code-block">
+                                        <button class="copy-btn" onclick="copyToClipboard(this, '{{ problem.sample_input }}')">Copy</button>
+                                        <pre>{{ problem.sample_input }}</pre>
+                                    </div>
+                                    <h3 style="font-size: 16px; margin-top: 10px;">Output:</h3>
+                                    <div class="code-block">
+                                        <button class="copy-btn" onclick="copyToClipboard(this, '{{ problem.sample_output }}')">Copy</button>
+                                        <pre>{{ problem.sample_output }}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            {% if problem.hint %}
+                            <div class="problem-section">
+                                <h2 class="problem-section-title">Hint</h2>
+                                <div>{{ problem.hint|safe }}</div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Submit code -->
+                        <div class="layui-tab-item" id="submit">
+                            <div class="problem-section">
+                                <h2 class="problem-section-title">Submit Code</h2>
+                                <form class="submission-form layui-form" id="codeSubmitForm" method="post" action="{% url 'student_practice:submit_solution' problem.id %}">
+                                    {% csrf_token %}
+                                    <!-- Form does not include difficulty field to avoid conflicts with backend model definition -->
+                                    <div class="layui-form-item">
+                                        <label class="layui-form-label">Language</label>
+                                        <div class="layui-input-block">
+                                            <select name="language" id="language" lay-verify="required" lay-filter="language">
+                                                <option value="python">Python</option>
+                                                <option value="java">Java</option>
+                                                <option value="cpp">C++</option>
+                                                <option value="c">C</option>
+                                                <option value="javascript">JavaScript</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="layui-form-item">
+                                        <label class="layui-form-label">Code</label>
+                                        <div class="layui-input-block">
+                                            <div class="editor-toolbar">
+                                                <button type="button" onclick="formatCode()">Format Code</button>
+                                                <button type="button" onclick="toggleFullScreen()">Full Screen</button>
+                                            </div>
+                                            <textarea id="code" name="code" required lay-verify="required">{{ last_code }}</textarea>
+                                        </div>
+                                    </div>
+                                    <div class="layui-form-item">
+                                        <div class="layui-input-block">
+                                            <button type="button" class="layui-btn" id="submitBtn">Submit Code</button>
+                                            <button type="reset" class="layui-btn layui-btn-primary">Reset</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Submission history -->
+                        <div class="layui-tab-item">
+                            <div class="problem-section">
+                                <h2 class="problem-section-title">Submission History</h2>
+                                <table class="submission-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Submission Time</th>
+                                            <th>Language</th>
+                                            <th>Status</th>
+                                            <th>Execution Time</th>
+                                            <th>Memory Usage</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="submissions-table-body">
+                                        {% if submissions %}
+                                        {% for submission in submissions %}
+                                        <tr>
+                                            <td>{{ submission.created_at|date:"Y-m-d H:i:s" }}</td>
+                                            <td>{{ submission.get_language_display }}</td>
+                                            <td>
+                                                {% if submission.status == 'accepted' %}
+                                                <span class="status-accepted"><i class="layui-icon layui-icon-ok-circle"></i> Accepted</span>
+                                                {% elif submission.status == 'pending' %}
+                                                <span class="status-pending"><i class="layui-icon layui-icon-loading"></i> Evaluating</span>
+                                                {% else %}
+                                                <span class="status-wrong"><i class="layui-icon layui-icon-close-fill"></i> {{ submission.get_status_display }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ submission.execution_time }} ms</td>
+                                            <td>{{ submission.memory_used }} KB</td>
+                                            <td>
+                                                <a href="{% url 'student_practice:submission_detail' submission.id %}" class="layui-btn layui-btn-xs">Details</a>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 30px;">No submission records</td>
+                        </tr>
+                                        {% endfor %}
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="6" style="text-align: center; padding: 30px;">No submission records</td>
+                                        </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Statistics data -->
+                        <div class="layui-tab-item">
+                            <div class="problem-section">
+                                <h2 class="problem-section-title">Problem Statistics</h2>
+                                <div class="layui-row layui-col-space15" style="margin-top: 20px;">
+                                    <div class="layui-col-md6">
+                                        <div class="layui-card">
+                                            <div class="layui-card-header">Submission Status</div>
+                                            <div class="layui-card-body">
+                                                <div class="layui-row layui-col-space10">
+                                                    <div class="layui-col-md6">
+                                                        <p><strong>Total Submissions:</strong> {{ problem.submission_count }}</p>
+                                                        <p><strong>Accepted:</strong> {{ problem.accepted_count }}</p>
+                                                    </div>
+                                                    <div class="layui-col-md6">
+                                                        <p><strong>Acceptance Rate:</strong> 
+                                                            {% if problem.submission_count > 0 %}
+                                                                {{ problem.accepted_count|floatformat:1|default:"0" }}%
+                                                            {% else %}
+                                                                0%
+                                                            {% endif %}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="layui-col-md6">
+                                        <div class="layui-card">
+                                            <div class="layui-card-header">My Submissions</div>
+                                            <div class="layui-card-body">
+                                                <div class="layui-row layui-col-space10">
+                                                    <div class="layui-col-md6">
+                                                        <p><strong>My Submissions:</strong> {{ submissions|length }}</p>
+                                                        <p><strong>My Accepted:</strong> {{ accepted_count }}</p>
+                                                    </div>
+                                                    <div class="layui-col-md6">
+                                                        <p><strong>My Acceptance Rate:</strong> 
+                                                            {% if submissions|length > 0 %}
+                                                                {{ accepted_count|floatformat:1|default:"0" }}%
+                                                            {% else %}
+                                                                0%
+                                                            {% endif %}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div style="margin-top: 20px;">
+                                    <a href="{% url 'student_practice:statistics' %}" class="layui-btn">View My Complete Statistics</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        © 2025 Code Online Judge Copyright | Elegant code review platform
+    </footer>
+
+    <!-- First import jQuery -->
+    <script src="{% static 'js/jquery-3.7.1.js' %}"></script>
+    <!-- Then import Layui -->
+    <script src="{% static 'layui-v2.11.4/layui/layui.js' %}"></script>
+    
+    <!-- Add utility functions -->
+    <script>
+        // Function to copy text to clipboard
+        function copyToClipboard(button, text) {
+            navigator.clipboard.writeText(text).then(function() {
+                // Change button text temporarily
+                var originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.style.backgroundColor = '#5c7cfa';
+                button.style.color = 'white';
+                
+                // Reset button after 2 seconds
+                setTimeout(function() {
+                    button.textContent = originalText;
+                    button.style.backgroundColor = '';
+                    button.style.color = '';
+                }, 2000);
+            }).catch(function(err) {
+                console.error('Could not copy text: ', err);
+                layui.use('layer', function() {
+                    layui.layer.msg('Failed to copy to clipboard', {icon: 2});
+                });
+            });
+        }
+        
+        // Function to format code in editor
+        function formatCode() {
+            if (!editor) return;
+            
+            try {
+                // Get current mode
+                var mode = editor.getOption('mode');
+                var code = editor.getValue();
+                
+                if (mode === 'python') {
+                    // Simple Python indentation formatting
+                    var lines = code.split('\n');
+                    var formattedLines = [];
+                    var indentLevel = 0;
+                    
+                    for (var i = 0; i < lines.length; i++) {
+                        var line = lines[i].trim();
+                        
+                        // Decrease indent for lines that end a block
+                        if (line.startsWith('}') || line.startsWith(')') || line.startsWith(']') || 
+                            line === 'else:' || line === 'elif:' || line === 'except:' || line === 'finally:') {
+                            indentLevel = Math.max(0, indentLevel - 1);
+                        }
+                        
+                        // Add proper indentation
+                        if (line.length > 0) {
+                            formattedLines.push(' '.repeat(indentLevel * 4) + line);
+                        } else {
+                            formattedLines.push('');
+                        }
+                        
+                        // Increase indent for lines that start a block
+                        if (line.endsWith(':') || line.endsWith('{') || line.endsWith('(') || line.endsWith('[')) {
+                            indentLevel++;
+                        }
+                    }
+                    
+                    editor.setValue(formattedLines.join('\n'));
+                    
+                } else {
+                    // For other languages, just do basic indentation
+                    editor.autoFormatRange({line:0, ch:0}, {line:editor.lineCount()});
+                }
+                
+                layui.use('layer', function() {
+                    layui.layer.msg('Code formatted', {icon: 1});
+                });
+            } catch (e) {
+                console.error('Error formatting code:', e);
+                layui.use('layer', function() {
+                    layui.layer.msg('Could not format code', {icon: 2});
+                });
+            }
+        }
+        
+        // Function to toggle fullscreen mode
+        function toggleFullScreen() {
+            if (!editor) return;
+            
+            if (!editor.getOption('fullScreen')) {
+                editor.setOption('fullScreen', true);
+            } else {
+                editor.setOption('fullScreen', false);
+            }
+        }
+        
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+S or Cmd+S to submit code
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                if (!$('#submitBtn').hasClass('layui-btn-disabled')) {
+                    $('#submitBtn').click();
+                }
+            }
+            
+            // Escape to exit fullscreen
+            if (e.key === 'Escape' && editor && editor.getOption('fullScreen')) {
+                editor.setOption('fullScreen', false);
+            }
+            
+            // Ctrl+1/2/3/4 to switch tabs
+            if (e.ctrlKey && (e.key === '1' || e.key === '2' || e.key === '3' || e.key === '4')) {
+                e.preventDefault();
+                var tabIndex = parseInt(e.key) - 1;
+                if (tabIndex >= 0 && tabIndex <= 3) {
+                    layui.element.tabChange('problemTab', tabIndex);
+                }
+            }
+        });
+        
+        // Add page load performance tracking
+        window.addEventListener('load', function() {
+            // Calculate and log page load time
+            if (window.performance) {
+                var pageLoadTime = window.performance.timing.domContentLoadedEventEnd - 
+                                  window.performance.timing.navigationStart;
+                console.log('Page load time: ' + pageLoadTime + 'ms');
+            }
+        });
+    </script>
+    <script>
+        // Global variable to store editor instance
+        var editor;
+        
+        // Execute after page load completes
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize editor when CodeMirror is loaded
+            if (typeof CodeMirror !== 'undefined') {
+                initCodeMirror();
+            } else {
+                // Wait for CodeMirror to load
+                document.addEventListener('DOMContentLoaded', function checkCodeMirror() {
+                    if (typeof CodeMirror !== 'undefined') {
+                        initCodeMirror();
+                    } else {
+                        setTimeout(checkCodeMirror, 100);
+                    }
+                });
+            }
+            
+            // Add global AJAX error handling
+            setupAjaxErrorHandling();
+            
+            // Handle URL hash for tab navigation
+            handleUrlHash();
+        });
+        
+        // Handle URL hash for tab navigation
+        function handleUrlHash() {
+            // Wait for Layui to be ready
+            if (typeof layui === 'undefined') {
+                setTimeout(handleUrlHash, 100);
+                return;
+            }
+            
+            layui.use('element', function() {
+                var element = layui.element;
+                var hash = window.location.hash;
+                
+                if (hash) {
+                    var tabIndex = 0;
+                    if (hash === '#submit') {
+                        tabIndex = 1;
+                    } else if (hash === '#history') {
+                        tabIndex = 2;
+                    } else if (hash === '#stats') {
+                        tabIndex = 3;
+                    }
+                    
+                    // Use Layui method to switch tabs
+                    setTimeout(function() {
+                        $('.layui-tab-title li').eq(tabIndex).click();
+                    }, 200);
+                }
+            });
+        }
+        
+        // Initialize CodeMirror editor
+        function initCodeMirror() {
+            var codeTextarea = document.getElementById("code");
+            if (!codeTextarea) return;
+            
+            editor = CodeMirror.fromTextArea(codeTextarea, {
+                lineNumbers: true,
+                mode: "python",
+                theme: "idea",
+                indentUnit: 4,
+                smartIndent: true,
+                indentWithTabs: false,
+                lineWrapping: true,
+                matchBrackets: true,
+                autoCloseBrackets: true,
+                extraKeys: {"Ctrl-Space": "autocomplete"},
+                autofocus: false, // Don't autofocus until tab is active
+                viewportMargin: Infinity
+            });
+            
+            // Ensure code editor displays immediately
+            setTimeout(function() {
+                editor.refresh();
+            }, 100);
+        }
+        
+        // Set up global AJAX error handling
+        function setupAjaxErrorHandling() {
+            $(document).ajaxError(function(event, jqXHR, settings, thrownError) {
+                // Check if it's a database connection error
+                if (thrownError === 'Internal Server Error' || 
+                    (jqXHR.responseText && jqXHR.responseText.indexOf('OperationalError') !== -1)) {
+                    
+                    layui.use('layer', function() {
+                        var layer = layui.layer;
+                        // Show friendly error message
+                        layer.msg('Database connection problem, please try again later', {
+                            icon: 2,
+                            time: 5000,
+                            shade: [0.3, '#000']
+                        });
+                    });
+                    
+                    // If error occurs during form submission, reset submit button
+                    if ($('#submitBtn').hasClass('layui-btn-disabled')) {
+                        $('#submitBtn').removeClass('layui-btn-disabled').text('Submit Code');
+                    }
+                }
+            });
+        }
+        
+        // Initialize Layui components with performance optimization
+        layui.config({
+            version: '2.11.4'  // Cache version
+        }).use(['element', 'form', 'layer'], function() {
+            var element = layui.element;
+            var form = layui.form;
+            var layer = layui.layer;
+            
+            // Listen for tab switching to ensure code editor displays correctly
+            element.on('tab(problemTab)', function(data){
+                if(data.index === 1) { // Submit code tab
+                    setTimeout(function() {
+                        if (editor) {
+                            editor.refresh();
+                            // Focus editor when tab is active
+                            editor.focus();
+                        }
+                    }, 10);
+                }
+            });
+            
+            // Listen for language selection changes, update editor mode
+            form.on('select(language)', function(data){
+                if (!editor) return;
+                
+                var mode = "python";
+                switch(data.value) {
+                    case "python":
+                        mode = "python";
+                        break;
+                    case "java":
+                    case "cpp":
+                    case "c":
+                        mode = "clike";
+                        break;
+                    case "javascript":
+                        mode = "javascript";
+                        break;
+                }
+                editor.setOption("mode", mode);
+            });
+            
+            // Reset button functionality implementation
+            $('button[type="reset"]').on('click', function() {
+                if (editor) {
+                    editor.setValue(''); // Clear code editor content
+                    editor.focus();
+                }
+                return false; // Prevent form default reset behavior
+            });
+            
+            // Add submit button status variable
+            var isSubmitting = false;
+            
+            // Submit code
+            $('#submitBtn').on('click', function() {
+                // Prevent repeated submissions
+                if (isSubmitting) {
+                    layer.msg('Submitting, please do not repeat the operation', {icon: 0});
+                    return;
+                }
+                
+                isSubmitting = true;
+                $(this).addClass('layui-btn-disabled').html('<span class="submit-loading"></span>Submitting...');
+                
+                // Ensure editor is initialized
+                if (editor) {
+                    // Update editor content to textarea
+                    editor.save();
+                }
+                
+                // Get form data
+                var code = $('#code').val();
+                var language = $('#language').val();
+                var csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+                
+                if (!code.trim()) {
+                    layer.msg('Code cannot be empty', {
+                        icon: 2,
+                        time: 2000,
+                        shade: [0.2, '#000']
+                    });
+                    isSubmitting = false;
+                    $(this).removeClass('layui-btn-disabled').text('Submit Code');
+                    return;
+                }
+                
+                // Show loading prompt with text description
+                var loadingIndex = layer.msg('Submitting code, please wait...', {
+                    icon: 16,
+                    shade: [0.3, '#000'],
+                    time: 0 // Don't auto-close
+                });
+                
+                // Use AJAX to submit so we can fully control the data sent
+                $.ajax({
+                    url: '{% url "student_practice:submit_solution" problem.id %}',
+                    type: 'POST',
+                    data: {
+                        'language': language,
+                        'code': code,
+                        'csrfmiddlewaretoken': csrfToken
+                    },
+                    dataType: 'json',
+                    timeout: 30000, // 30 second timeout
+                    success: function(response) {
+                        layer.close(loadingIndex);
+                        
+                        // Reset submit button status
+                        isSubmitting = false;
+                        $('#submitBtn').removeClass('layui-btn-disabled').text('Submit Code');
+                        
+                        if (response.success) {
+                            // Submission successful, show success prompt
+                            layer.msg('Code submitted successfully! Redirecting to submission history...', {
+                                icon: 1,
+                                time: 2000,
+                                shade: [0.3, '#000']
+                            });
+                            
+                            // After successful submission, directly switch to submission history tab
+                            setTimeout(function() {
+                                // Directly switch to submission history tab (index 2)
+                                element.tabChange('problemTab', 2);
+                                
+                                // Refresh submission history without full page reload
+                                refreshSubmissionHistory();
+                            }, 1000);
+                        } else {
+                            // Submission failed, show error message
+                            layer.msg('Submission failed: ' + response.message, {
+                                icon: 2,
+                                time: 3000,
+                                shade: [0.2, '#000']
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        layer.close(loadingIndex);
+                        
+                        // Reset submit button status
+                        isSubmitting = false;
+                        $('#submitBtn').removeClass('layui-btn-disabled').text('Submit Code');
+                        
+                        var errorMsg = 'Submission request failed, please check your network connection';
+                        
+                        if (status === 'timeout') {
+                            errorMsg = 'Request timed out. The server might be busy, please try again later.';
+                        } else {
+                            try {
+                                var response = JSON.parse(xhr.responseText);
+                                if (response.message) {
+                                    errorMsg = response.message;
+                                }
+                            } catch (e) {
+                                if (xhr.status === 0) {
+                                    errorMsg = 'Network connection interrupted, please check your network';
+                                } else if (xhr.status === 500) {
+                                    errorMsg = 'Internal server error, please try again later';
+                                } else if (xhr.status === 2013) {
+                                    errorMsg = 'Database connection lost, please refresh the page and try again';
+                                }
+                            }
+                        }
+                        
+                        // Show more detailed error information
+                        layer.msg(errorMsg, {
+                            icon: 2,
+                            time: 3000,
+                            shade: [0.2, '#000']
+                        });
+                    }
+                });
+            });
+            
+            // Function to refresh submission history without full page reload
+            function refreshSubmissionHistory() {
+                // Show loading indicator in the table
+                var tableBody = $('#submissions-table-body');
+                tableBody.html('<tr><td colspan="6" style="text-align: center; padding: 30px;"><i class="layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop"></i> Loading submissions...</td></tr>');
+                
+                $.ajax({
+                    url: window.location.pathname + '?partial=submissions',
+                    type: 'GET',
+                    cache: false, // Prevent caching to get fresh data
+                    success: function(data) {
+                        try {
+                            // Try to parse as JSON first
+                            var jsonData = JSON.parse(data);
+                            updateSubmissionsTable(jsonData.submissions);
+                        } catch (e) {
+                            // If not JSON, assume it's HTML and reload the page
+                            window.location.reload();
+                        }
+                    },
+                    error: function() {
+                        // On error, show error message
+                        tableBody.html('<tr><td colspan="6" style="text-align: center; padding: 30px; color: #dc3545;"><i class="layui-icon layui-icon-close-fill"></i> Failed to load submissions. <a href="javascript:refreshSubmissionHistory()">Try again</a></td></tr>');
+                    }
+                });
+            }
+            
+            // Function to update submissions table with new data
+            function updateSubmissionsTable(submissions) {
+                if (!submissions || !Array.isArray(submissions)) {
+                    return;
+                }
+                
+                var tableBody = $('#submissions-table-body');
+                tableBody.empty();
+                
+                if (submissions.length === 0) {
+                    tableBody.append('<tr><td colspan="6" style="text-align: center; padding: 30px;">No submission records</td></tr>');
+                    return;
+                }
+                
+                submissions.forEach(function(submission) {
+                    var statusHtml = '';
+                    if (submission.status === 'accepted') {
+                        statusHtml = '<span class="status-accepted"><i class="layui-icon layui-icon-ok-circle"></i> Accepted</span>';
+                    } else if (submission.status === 'pending') {
+                        statusHtml = '<span class="status-pending"><i class="layui-icon layui-icon-loading"></i> Evaluating</span>';
+                    } else {
+                        statusHtml = '<span class="status-wrong"><i class="layui-icon layui-icon-close-fill"></i> ' + submission.status_display + '</span>';
+                    }
+                    
+                    var row = '<tr>' +
+                        '<td>' + submission.created_at + '</td>' +
+                        '<td>' + submission.language_display + '</td>' +
+                        '<td>' + statusHtml + '</td>' +
+                        '<td>' + submission.execution_time + ' ms</td>' +
+                        '<td>' + submission.memory_used + ' KB</td>' +
+                        '<td><a href="/student/submission/' + submission.id + '/" class="layui-btn layui-btn-xs">Details</a></td>' +
+                        '</tr>';
+                    
+                    tableBody.append(row);
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

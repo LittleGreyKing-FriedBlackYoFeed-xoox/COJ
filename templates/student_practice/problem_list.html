@@ -1,0 +1,525 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Code Online Judge - Problem Practice">
+    <title>Problem Practice - Code Online Judge</title>
+    <!-- Preload key resources -->
+    <link rel="preload" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}" as="style">
+    <link rel="preload" href="{% static 'js/jquery-3.7.1.js' %}" as="script">
+    <link rel="preload" href="{% static 'layui-v2.11.4/layui/layui.js' %}" as="script">
+    <!-- Import stylesheets -->
+    <link rel="stylesheet" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}">
+    <!-- Add page cache control -->
+    <meta http-equiv="Cache-Control" content="max-age=300">
+    <style>
+        :root {
+            --light-gray: #f5f7fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --text-dark: #343a40;
+            --text-light: #6c757d;
+            --accent-color: #5c7cfa;
+            --border-color: #dee2e6;
+            --hover-bg: #e2e6ea;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-gray);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        /* Elegant gray-white navigation bar style */
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: var(--text-dark);
+            font-size: 22px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .logo i {
+            margin-right: 12px;
+            font-size: 26px;
+            color: var(--accent-color);
+            background: linear-gradient(135deg, var(--accent-color), #748ffc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .content {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .breadcrumb {
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border-color);
+        }
+
+        .breadcrumb a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .filter-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border-color);
+        }
+        
+        /* 筛选条件样式优化 */
+        .layui-form-label {
+            width: 80px;
+            padding: 9px 10px;
+        }
+        
+        .layui-input-inline {
+            width: 180px;
+        }
+        
+        /* 表格样式优化 */
+        .problem-table {
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .problem-table th {
+            font-weight: 600;
+            background-color: #f8f9fa;
+        }
+        
+        /* 标签样式 */
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 5px;
+            background-color: #f0f2f5;
+            color: var(--text-dark);
+        }
+
+        .problem-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .problem-table th, .problem-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .problem-table th {
+            background-color: var(--light-gray);
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .problem-table tr:hover {
+            background-color: var(--light-gray);
+        }
+
+        .problem-table .problem-title {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .problem-table .problem-title:hover {
+            text-decoration: underline;
+        }
+
+        .difficulty-easy {
+            color: #28a745;
+        }
+
+        .difficulty-medium {
+            color: #fd7e14;
+        }
+
+        .difficulty-hard {
+            color: #dc3545;
+        }
+
+        .status-solved {
+            color: #28a745;
+        }
+
+        .status-attempted {
+            color: #fd7e14;
+        }
+
+        .status-unsolved {
+            color: #6c757d;
+        }
+
+        .footer {
+            background-color: white;
+            color: var(--text-light);
+            text-align: center;
+            padding: 25px 15px;
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            font-size: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                margin: 20px auto;
+                padding: 0 15px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <i class="layui-icon layui-icon-code-circle"></i>
+                Code Online Judge(LCTC)
+            </a>
+        </div>
+    </header>
+
+    <div class="content">
+        <!-- 面包屑导航 -->
+        <div class="breadcrumb">
+            <span><a href="{% url 'home' %}">Home</a></span>
+            <span> / </span>
+            <span>Problem Practice</span>
+        </div>
+
+        <!-- 题目列表卡片 -->
+        <div class="card">
+            <h2 style="margin-bottom: 20px; color: var(--text-dark);">Problem List</h2>
+            
+            <!-- 题目统计信息 -->
+            <div class="layui-row" style="margin-bottom: 20px;">
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-header">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>Problem Statistics</span>
+                                <div>
+                                    <a href="{% url 'student_practice:statistics' %}" class="layui-btn layui-btn-xs layui-btn-primary">
+                                        <i class="layui-icon layui-icon-chart-screen"></i> Learning Statistics
+                                    </a>
+                                    <a href="{% url 'ranking_system:ranking_list' %}" class="layui-btn layui-btn-xs layui-btn-primary">
+                                        <i class="layui-icon layui-icon-flag"></i> Ranking System
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-card-body">
+                            <div class="layui-row layui-col-space15">
+                                <div class="layui-col-md3">
+                                    <div class="layui-card">
+                                        <div class="layui-card-header">Total Problems</div>
+                                    <div class="layui-card-body" style="font-size: 24px; font-weight: bold; color: var(--accent-color);">
+                                            {{ problems.paginator.count }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="layui-col-md3">
+                                    <div class="layui-card">
+                                        <div class="layui-card-header">Solved</div>
+                                        <div class="layui-card-body">
+                                            <div style="font-size: 24px; font-weight: bold; color: #28a745;">
+                                                {{ user_stats.total_problems_solved|default:"0" }}
+                                            </div>
+                                            <div style="font-size: 14px; color: #28a745; margin-top: 5px;">
+                                                {{ solved_percentage|default:"0" }}% Completion
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="layui-col-md3">
+                                    <div class="layui-card">
+                                        <div class="layui-card-header">Attempted</div>
+                                        <div class="layui-card-body">
+                                            <div style="font-size: 24px; font-weight: bold; color: #fd7e14;">
+                                                {{ user_stats.total_problems_attempted|default:"0" }}
+                                            </div>
+                                            <div style="font-size: 14px; color: #fd7e14; margin-top: 5px;">
+                                                {{ attempted_percentage|default:"0" }}% Attempt Rate
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="layui-col-md3">
+                                    <div class="layui-card">
+                                        <div class="layui-card-header">Unsolved</div>
+                                        <div class="layui-card-body">
+                                            <div style="font-size: 24px; font-weight: bold; color: #6c757d;">
+                                                {{ unsolved_count|default:"0" }}
+                                            </div>
+                                            <div style="font-size: 14px; color: #6c757d; margin-top: 5px;">
+                                                {{ unsolved_percentage|default:"0" }}% Incomplete
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 筛选条件 -->
+            <div class="filter-section">
+                <form class="layui-form" action="" method="get">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">Problem Type</label>
+                            <div class="layui-input-inline">
+                                <select name="problem_type" lay-filter="problem_type">
+                                    <option value="">All Types</option>
+                                    <option value="multiple_choice" {% if request.GET.problem_type == 'multiple_choice' %}selected{% endif %}>Multiple Choice</option>
+                                    <option value="fill_blank" {% if request.GET.problem_type == 'fill_blank' %}selected{% endif %}>Fill in the Blank</option>
+                                    <option value="programming" {% if request.GET.problem_type == 'programming' %}selected{% endif %}>Programming</option>
+                                    <option value="algorithm" {% if request.GET.problem_type == 'algorithm' %}selected{% endif %}>Algorithm</option>
+                                    <option value="design" {% if request.GET.problem_type == 'design' %}selected{% endif %}>Design</option>
+                                    <option value="comprehensive" {% if request.GET.problem_type == 'comprehensive' %}selected{% endif %}>Comprehensive</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="layui-inline">
+                            <label class="layui-form-label">Knowledge</label>
+                            <div class="layui-input-inline">
+                                <select name="knowledge_point" lay-filter="knowledge_point">
+                                    <option value="">All Knowledge Points</option>
+                                    <option value="data_structure" {% if request.GET.knowledge_point == 'data_structure' %}selected{% endif %}>Data Structure</option>
+                                    <option value="algorithm" {% if request.GET.knowledge_point == 'algorithm' %}selected{% endif %}>Algorithm</option>
+                                    <option value="database" {% if request.GET.knowledge_point == 'database' %}selected{% endif %}>Database</option>
+                                    <option value="network" {% if request.GET.knowledge_point == 'network' %}selected{% endif %}>Network</option>
+                                    <option value="operating_system" {% if request.GET.knowledge_point == 'operating_system' %}selected{% endif %}>Operating System</option>
+                                    <option value="frontend" {% if request.GET.knowledge_point == 'frontend' %}selected{% endif %}>Frontend Development</option>
+                                    <option value="backend" {% if request.GET.knowledge_point == 'backend' %}selected{% endif %}>Backend Development</option>
+                                    <option value="computer_basics" {% if request.GET.knowledge_point == 'computer_basics' %}selected{% endif %}>Computer Basics</option>
+                                    <option value="programming_language" {% if request.GET.knowledge_point == 'programming_language' %}selected{% endif %}>Programming Language</option>
+                                    <option value="software_engineering" {% if request.GET.knowledge_point == 'software_engineering' %}selected{% endif %}>Software Engineering</option>
+                                    <option value="system_design" {% if request.GET.knowledge_point == 'system_design' %}selected{% endif %}>System Design</option>
+                                    <option value="database_design" {% if request.GET.knowledge_point == 'database_design' %}selected{% endif %}>Database Design</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="layui-inline">
+                            <label class="layui-form-label">Difficulty</label>
+                            <div class="layui-input-inline">
+                                <select name="difficulty">
+                                    <option value="">All Difficulties</option>
+                                    <option value="1" {% if request.GET.difficulty == '1' %}selected{% endif %}>Easy</option>
+                                    <option value="2" {% if request.GET.difficulty == '2' %}selected{% endif %}>Medium</option>
+                                    <option value="3" {% if request.GET.difficulty == '3' %}selected{% endif %}>Hard</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">Status</label>
+                            <div class="layui-input-inline">
+                                <select name="status">
+                                    <option value="">All Status</option>
+                                    <option value="solved" {% if request.GET.status == 'solved' %}selected{% endif %}>Solved</option>
+                                    <option value="attempted" {% if request.GET.status == 'attempted' %}selected{% endif %}>Attempted</option>
+                                    <option value="unsolved" {% if request.GET.status == 'unsolved' %}selected{% endif %}>Unsolved</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="layui-inline">
+                            <label class="layui-form-label">Search</label>
+                            <div class="layui-input-inline" style="width: 300px;">
+                                <input type="text" name="search" placeholder="Problem name/keywords" autocomplete="off" class="layui-input" value="{{ request.GET.search }}">
+                            </div>
+                        </div>
+                        
+                        <div class="layui-inline">
+                            <button class="layui-btn" lay-submit><i class="layui-icon layui-icon-search"></i> Filter</button>
+                            <button type="button" class="layui-btn layui-btn-primary" id="reset-filter"><i class="layui-icon layui-icon-refresh"></i> Reset</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 题目表格 -->
+            <table class="problem-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">ID</th>
+                        <th style="width: 35%;">Problem Name</th>
+                        <th style="width: 10%;">Type</th>
+                        <th style="width: 15%;">Knowledge</th>
+                        <th style="width: 10%;">Difficulty</th>
+                        <th style="width: 10%;">Status</th>
+                        <th style="width: 15%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for problem in problems %}
+                    <tr>
+                        <td>{{ problem.id }}</td>
+                        <td><a href="{% url 'student_practice:problem_detail' problem.id %}" class="problem-title">{{ problem.title }}</a></td>
+                        <td>{{ problem.problem_type_text|default:problem.problem_type }}</td>
+                        <td>{{ problem.knowledge_point|default:"General" }}</td>
+                        <td>
+                            {% if problem.difficulty == '1' or problem.difficulty == 1 %}
+                            <span class="difficulty-easy">Easy</span>
+                            {% elif problem.difficulty == '2' or problem.difficulty == 2 %}
+                            <span class="difficulty-medium">Medium</span>
+                            {% else %}
+                            <span class="difficulty-hard">Hard</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if problem.status == 'solved' %}
+                            <span class="status-solved"><i class="layui-icon layui-icon-ok-circle"></i> Solved</span>
+                            {% elif problem.status == 'attempted' %}
+                            <span class="status-attempted"><i class="layui-icon layui-icon-edit"></i> Attempted</span>
+                            {% else %}
+                            <span class="status-unsolved"><i class="layui-icon layui-icon-circle"></i> Unsolved</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'student_practice:problem_detail' problem.id %}" class="layui-btn layui-btn-xs">View</a>
+                            <a href="{% url 'student_practice:problem_detail' problem.id %}#submit" class="layui-btn layui-btn-xs layui-btn-normal">Submit</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 30px;">No problem data available</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- 分页 -->
+            <div class="layui-box layui-laypage layui-laypage-default" style="margin-top: 20px; text-align: center;">
+                {% if problems.has_previous %}
+                <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="layui-laypage-prev">First</a>
+                <a href="?page={{ problems.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="layui-laypage-prev">Previous</a>
+                {% endif %}
+                
+                {% for i in problems.paginator.page_range %}
+                    {% if i == problems.number %}
+                    <span class="layui-laypage-curr"><em class="layui-laypage-em"></em><em>{{ i }}</em></span>
+                    {% elif i > problems.number|add:'-3' and i < problems.number|add:'3' %}
+                    <a href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if problems.has_next %}
+                <a href="?page={{ problems.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="layui-laypage-next">Next</a>
+                <a href="?page={{ problems.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="layui-laypage-next">Last</a>
+                {% endif %}
+                
+                <span class="layui-laypage-count">Total {{ problems.paginator.count }} items</span>
+                <span class="layui-laypage-limits">
+                    <select lay-ignore onchange="window.location.href=this.value">
+                        <option value="?page=1&per_page=10{% for key, value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" {% if request.GET.per_page == '10' or not request.GET.per_page %}selected{% endif %}>10 items/page</option>
+                        <option value="?page=1&per_page=20{% for key, value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" {% if request.GET.per_page == '20' %}selected{% endif %}>20 items/page</option>
+                        <option value="?page=1&per_page=30{% for key, value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" {% if request.GET.per_page == '30' %}selected{% endif %}>30 items/page</option>
+                        <option value="?page=1&per_page=50{% for key, value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" {% if request.GET.per_page == '50' %}selected{% endif %}>50 items/page</option>
+                    </select>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        © 2025 Code Online Judge Copyright | Professional Online Judge Platform
+    </footer>
+
+    <!-- 先引入jQuery -->
+    <script src="{% static 'js/jquery-3.7.1.js' %}"></script>
+    <!-- 再引入Layui -->
+    <script src="{% static 'layui-v2.11.4/layui/layui.js' %}"></script>
+    <script>
+        layui.use(['form', 'layer'], function() {
+            var form = layui.form;
+            var layer = layui.layer;
+            
+            // Reset filter conditions
+            $('#reset-filter').on('click', function() {
+                window.location.href = '{% url "student_practice:problem_list" %}';
+            });
+            
+            // Form pre-submission processing
+            form.on('submit', function(data) {
+                // 不需要手动移除空值参数，让表单正常提交
+                return true;
+            });
+            
+            // Removed the logic for dynamically adjusting knowledge points when problem type changes, now knowledge points are fixed dropdown options
+        });
+    </script>
+</body>
+
+</html>

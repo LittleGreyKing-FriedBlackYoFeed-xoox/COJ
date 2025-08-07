@@ -1,0 +1,474 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Code Online Judge - Ranking System">
+    <title>Ranking System - Code Online Judge</title>
+    <!-- Preload key resources -->
+    <link rel="preload" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}" as="style">
+    <link rel="preload" href="{% static 'js/jquery-3.7.1.js' %}" as="script">
+    <link rel="preload" href="{% static 'layui-v2.11.4/layui/layui.js' %}" as="script">
+    <!-- Import stylesheets -->
+    <link rel="stylesheet" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}">
+    <!-- Add page cache control -->
+    <meta http-equiv="Cache-Control" content="max-age=300">
+    <style>
+        :root {
+            --light-gray: #f5f7fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --text-dark: #343a40;
+            --text-light: #6c757d;
+            --accent-color: #5c7cfa;
+            --border-color: #dee2e6;
+            --hover-bg: #e2e6ea;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-gray);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        /* Elegant gray-white navigation bar style */
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: var(--text-dark);
+            font-size: 22px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .logo i {
+            margin-right: 12px;
+            font-size: 26px;
+            color: var(--accent-color);
+            background: linear-gradient(135deg, var(--accent-color), #748ffc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .content {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .breadcrumb {
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border-color);
+        }
+
+        .breadcrumb a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .footer {
+            background-color: white;
+            color: var(--text-light);
+            text-align: center;
+            padding: 25px 15px;
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            font-size: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                margin: 20px auto;
+                padding: 0 15px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <i class="layui-icon layui-icon-code-circle"></i>
+                Code Online Judge(LCTC)
+            </a>
+        </div>
+    </header>
+
+    <div class="content">
+        <!-- 面包屑导航 -->
+        <div class="breadcrumb">
+            <span><a href="{% url 'home' %}">Home</a></span>
+            <span> / </span>
+            <span><a href="{% url 'student_practice:problem_list' %}">Problem Practice</a></span>
+            <span> / </span>
+            <span>Ranking System</span>
+        </div>
+
+        <div class="card">
+            <h1 style="margin-bottom: 20px; font-size: 28px; color: var(--text-dark);">Student Ranking System</h1>
+            
+            {% if user_rank %}
+            <div class="layui-alert layui-bg-blue" style="padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <strong style="font-size: 16px;">Your current rank:</strong> <span style="font-size: 18px; font-weight: bold;">#{{ user_rank }}</span>
+                <p style="margin-top: 5px; font-size: 14px;">Keep practicing to improve your ranking!</p>
+            </div>
+            {% endif %}
+            
+            <!-- Ranking statistics summary -->
+            <div class="layui-row layui-col-space15" style="margin-bottom: 20px;">
+                <div class="layui-col-md4">
+                    <div class="layui-card">
+                        <div class="layui-card-header">Total Participants</div>
+                        <div class="layui-card-body" style="font-size: 24px; font-weight: bold; color: var(--accent-color);">
+                            {{ rankings.paginator.count }}
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md4">
+                    <div class="layui-card">
+                        <div class="layui-card-header">Top Performer</div>
+                        <div class="layui-card-body">
+                            {% if rankings.paginator.count > 0 %}
+                                {% with top_user=rankings.paginator.object_list.0 %}
+                                <div style="font-size: 18px; font-weight: bold; color: #28a745;">
+                                    {{ top_user.user.username }}
+                                </div>
+                                <div style="font-size: 14px; color: #28a745; margin-top: 5px;">
+                                    {{ top_user.problems_completed }} problems completed
+                                </div>
+                                {% endwith %}
+                            {% else %}
+                                <div style="font-size: 16px; color: var(--text-light);">
+                                    No data available
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md4">
+                    <div class="layui-card">
+                        <div class="layui-card-header">Ranking Updated</div>
+                        <div class="layui-card-body">
+                            {% if rankings.paginator.count > 0 %}
+                                {% with last_updated=rankings.paginator.object_list.0.last_updated %}
+                                <div style="font-size: 16px; font-weight: bold; color: var(--text-dark);">
+                                    {{ last_updated|date:"Y-m-d H:i" }}
+                                </div>
+                                <div style="font-size: 14px; color: var(--text-light); margin-top: 5px;">
+                                    {{ last_updated|timesince }} ago
+                                </div>
+                                {% endwith %}
+                            {% else %}
+                                <div style="font-size: 16px; color: var(--text-light);">
+                                    No data available
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="layui-card">
+                <div class="layui-card-header" style="display: flex; justify-content: space-between; align-items: center; padding: 15px;">
+                    <h3 style="margin: 0; font-size: 20px;">User Rankings</h3>
+                    <div>
+                        <div class="layui-inline" style="margin-right: 10px;">
+                            <input type="text" id="searchInput" placeholder="Search by username" class="layui-input" style="width: 200px;">
+                        </div>
+                        <a href="{% url 'ranking_system:update_rankings' %}" class="layui-btn layui-btn-normal">
+                            <i class="layui-icon layui-icon-refresh"></i> Update Rankings
+                        </a>
+                    </div>
+                </div>
+                <div class="layui-card-body">
+                    <table class="layui-table" id="rankingTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 8%;" onclick="sortTable(0)">
+                                    <div style="display: flex; align-items: center; cursor: pointer;">
+                                        Rank <i class="layui-icon layui-icon-triangle-d" style="font-size: 12px; margin-left: 5px;"></i>
+                                    </div>
+                                </th>
+                                <th style="width: 25%;" onclick="sortTable(1)">
+                                    <div style="display: flex; align-items: center; cursor: pointer;">
+                                        Username <i class="layui-icon layui-icon-triangle-d" style="font-size: 12px; margin-left: 5px;"></i>
+                                    </div>
+                                </th>
+                                <th style="width: 20%;" onclick="sortTable(2)">
+                                    <div style="display: flex; align-items: center; cursor: pointer;">
+                                        Problems Completed <i class="layui-icon layui-icon-triangle-d" style="font-size: 12px; margin-left: 5px;"></i>
+                                    </div>
+                                </th>
+                                <th style="width: 20%;" onclick="sortTable(3)">
+                                    <div style="display: flex; align-items: center; cursor: pointer;">
+                                        Total Attempts <i class="layui-icon layui-icon-triangle-d" style="font-size: 12px; margin-left: 5px;"></i>
+                                    </div>
+                                </th>
+                                <th style="width: 20%;" onclick="sortTable(4)">
+                                    <div style="display: flex; align-items: center; cursor: pointer;">
+                                        Last Updated <i class="layui-icon layui-icon-triangle-d" style="font-size: 12px; margin-left: 5px;"></i>
+                                    </div>
+                                </th>
+                                <th style="width: 7%;">Efficiency</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ranking in rankings %}
+                            <tr {% if ranking.user == request.user %}class="layui-bg-blue"{% endif %}>
+                                <td>
+                                    {% if ranking.rank_position <= 3 %}
+                                        <span class="layui-badge 
+                                            {% if ranking.rank_position == 1 %}layui-bg-orange{% elif ranking.rank_position == 2 %}layui-bg-cyan{% else %}layui-bg-green{% endif %}" 
+                                            style="font-size: 16px; padding: 5px 10px;">
+                                            {{ ranking.rank_position }}
+                                        </span>
+                                    {% else %}
+                                        {{ ranking.rank_position }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div style="display: flex; align-items: center;">
+                                        <div style="width: 30px; height: 30px; border-radius: 50%; background-color: {% cycle '#5c7cfa' '#fd7e14' '#28a745' '#dc3545' '#6c757d' '#20c997' '#6610f2' %}; color: white; display: flex; justify-content: center; align-items: center; margin-right: 10px;">
+                                            {{ ranking.user.username|make_list|first|upper }}
+                                        </div>
+                                        {{ ranking.user.username }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="layui-progress" lay-showpercent="true" style="margin-top: 10px;">
+                                        <div class="layui-progress-bar" lay-percent="{{ ranking.problems_completed }}%"></div>
+                                    </div>
+                                    <div style="margin-top: 5px;">{{ ranking.problems_completed }} problems</div>
+                                </td>
+                                <td>{{ ranking.total_attempts }} attempts</td>
+                                <td>{{ ranking.last_updated|date:"Y-m-d H:i" }}</td>
+                                <td>
+                                    {% if ranking.total_attempts > 0 %}
+                                        {% if ranking.problems_completed == ranking.total_attempts %}
+                                            <span class="layui-badge layui-bg-green">Excellent</span>
+                                        {% elif ranking.problems_completed >= 8 %}
+                                            <span class="layui-badge layui-bg-green">High</span>
+                                        {% elif ranking.problems_completed >= 5 %}
+                                            <span class="layui-badge layui-bg-blue">Medium</span>
+                                        {% else %}
+                                            <span class="layui-badge layui-bg-orange">Low</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="layui-badge layui-bg-gray">N/A</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 30px;">
+                                    <i class="layui-icon layui-icon-face-surprised" style="font-size: 30px; color: var(--text-light);"></i>
+                                    <p style="margin-top: 10px;">No ranking data available yet.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 分页 -->
+                <div class="layui-card-footer">
+                    <div class="layui-box layui-laypage layui-laypage-default" style="margin-top: 20px; text-align: center;">
+                        {% if rankings.has_previous %}
+                        <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="layui-laypage-prev">First</a>
+                        <a href="?page={{ rankings.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="layui-laypage-prev">Previous</a>
+                        {% endif %}
+                        
+                        {% for i in rankings.paginator.page_range %}
+                            {% if i == rankings.number %}
+                            <span class="layui-laypage-curr"><em class="layui-laypage-em"></em><em>{{ i }}</em></span>
+                            {% elif i > rankings.number|add:'-3' and i < rankings.number|add:'3' %}
+                            <a href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if rankings.has_next %}
+                        <a href="?page={{ rankings.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="layui-laypage-next">Next</a>
+                        <a href="?page={{ rankings.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="layui-laypage-next">Last</a>
+                        {% endif %}
+                        
+                        <span class="layui-laypage-count">Total {{ rankings.paginator.count }} items</span>
+                        <span class="layui-laypage-limits">
+                            <select lay-ignore onchange="window.location.href=this.value">
+                                <option value="?page=1&per_page=10{% for key, value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" {% if request.GET.per_page == '10' or not request.GET.per_page %}selected{% endif %}>10 items/page</option>
+                                <option value="?page=1&per_page=20{% for key, value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" {% if request.GET.per_page == '20' %}selected{% endif %}>20 items/page</option>
+                                <option value="?page=1&per_page=30{% for key, value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" {% if request.GET.per_page == '30' %}selected{% endif %}>30 items/page</option>
+                                <option value="?page=1&per_page=50{% for key, value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" {% if request.GET.per_page == '50' %}selected{% endif %}>50 items/page</option>
+                            </select>
+                        </span>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <small>Rankings are based on the number of problems completed, with ties broken by the number of attempts (fewer attempts rank higher).</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        © 2025 Code Online Judge Copyright | Professional Online Judge Platform
+    </footer>
+
+    <!-- 先引入jQuery -->
+    <script src="{% static 'js/jquery-3.7.1.js' %}"></script>
+    <!-- 再引入Layui -->
+    <script src="{% static 'layui-v2.11.4/layui/layui.js' %}"></script>
+    <script>
+        layui.use(['layer', 'element'], function() {
+            var layer = layui.layer;
+            var element = layui.element;
+            
+            // Initialize Layui components
+            element.render('progress');
+        });
+        
+        // Table sorting functionality
+        function sortTable(columnIndex) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("rankingTable");
+            switching = true;
+            // Set the sorting direction to ascending
+            dir = "asc";
+            
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                
+                // Loop through all table rows (except the header row)
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    
+                    // Get the two elements to compare
+                    x = rows[i].getElementsByTagName("TD")[columnIndex];
+                    y = rows[i + 1].getElementsByTagName("TD")[columnIndex];
+                    
+                    // Check if the two rows should switch
+                    if (dir == "asc") {
+                        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (shouldSwitch) {
+                    // If a switch has been marked, make the switch and mark that a switch has been done
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    // Each time a switch is done, increase switchcount by 1
+                    switchcount++;
+                } else {
+                    // If no switching has been done AND the direction is "asc", set the direction to "desc" and run the loop again
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+            
+            // Update the icons to show sorting direction
+            var headers = table.getElementsByTagName("th");
+            for (i = 0; i < headers.length; i++) {
+                var icon = headers[i].getElementsByTagName("i")[0];
+                if (i === columnIndex) {
+                    if (dir === "asc") {
+                        icon.className = "layui-icon layui-icon-triangle-d";
+                    } else {
+                        icon.className = "layui-icon layui-icon-triangle-u";
+                    }
+                } else {
+                    if (icon) {
+                        icon.className = "layui-icon layui-icon-triangle-d";
+                    }
+                }
+            }
+        }
+        
+        // Table search functionality
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById('searchInput');
+            filter = input.value.toUpperCase();
+            table = document.getElementById('rankingTable');
+            tr = table.getElementsByTagName('tr');
+            
+            // Loop through all table rows, and hide those who don't match the search query
+            for (i = 1; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName('td')[1]; // Username column
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

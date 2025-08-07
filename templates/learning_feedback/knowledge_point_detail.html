@@ -1,0 +1,234 @@
+{% extends "cojHtml/base.html" %}
+{% load static %}
+
+{% block title %}Knowledge Point: {{ knowledge_point }}{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+<script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<style>
+    .detail-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    .card-header {
+        border-radius: 10px 10px 0 0 !important;
+        font-weight: bold;
+    }
+    .problem-card {
+        border-left: 4px solid #007bff;
+        margin-bottom: 15px;
+        transition: transform 0.2s;
+    }
+    .problem-card:hover {
+        transform: translateX(5px);
+    }
+    .solved {
+        border-left-color: #28a745;
+    }
+    .unsolved {
+        border-left-color: #dc3545;
+    }
+    .badge-easy {
+        background-color: #28a745;
+    }
+    .badge-medium {
+        background-color: #fd7e14;
+    }
+    .badge-hard {
+        background-color: #dc3545;
+    }
+    .metric-card {
+        text-align: center;
+        padding: 15px;
+    }
+    .metric-value {
+        font-size: 24px;
+        font-weight: bold;
+    }
+    .metric-label {
+        font-size: 14px;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'learning_feedback:dashboard' %}">Learning Feedback</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ knowledge_point }}</li>
+                </ol>
+            </nav>
+            <h1 class="mb-3">Knowledge Point: {{ knowledge_point }}</h1>
+            <p class="text-muted">
+                Detailed analysis of your performance on problems related to this knowledge point.
+            </p>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card detail-card">
+                <div class="card-body metric-card">
+                    <div class="metric-value">{{ performance.problems_attempted }}</div>
+                    <div class="metric-label">Problems Attempted</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card detail-card">
+                <div class="card-body metric-card">
+                    <div class="metric-value">{{ performance.problems_solved }}</div>
+                    <div class="metric-label">Problems Solved</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card detail-card">
+                <div class="card-body metric-card">
+                    <div class="metric-value">
+                        {% if performance.problems_attempted > 0 %}
+                            {{ performance.problems_solved|floatformat:0|default:"0" }}
+                            /
+                            {{ performance.problems_attempted|floatformat:0|default:"0" }}
+                            ({{ performance.success_rate|floatformat:1 }}%)
+                        {% else %}
+                            0/0 (0%)
+                        {% endif %}
+                    </div>
+                    <div class="metric-label">Success Rate</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card detail-card">
+                <div class="card-body metric-card">
+                    <div class="metric-value">{{ performance.average_time|floatformat:0 }} ms</div>
+                    <div class="metric-label">Avg. Completion Time</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Problems List -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card detail-card">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-code"></i> Problems You've Attempted
+                </div>
+                <div class="card-body">
+                    {% for problem_id, data in problem_submissions.items %}
+                        <div class="card problem-card {% if data.solved %}solved{% else %}unsolved{% endif %}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0">
+                                        <a href="{% url 'student_practice:problem_detail' data.problem.id %}">
+                                            {{ data.problem.title }}
+                                        </a>
+                                    </h5>
+                                    <div>
+                                        {% if data.problem.difficulty == 1 %}
+                                            <span class="badge badge-easy">Easy</span>
+                                        {% elif data.problem.difficulty == 2 %}
+                                            <span class="badge badge-medium">Medium</span>
+                                        {% else %}
+                                            <span class="badge badge-hard">Hard</span>
+                                        {% endif %}
+                                        
+                                        {% if data.solved %}
+                                            <span class="badge badge-success">Solved</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">Unsolved</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <p class="card-text text-muted mt-2">{{ data.problem.description|truncatechars:150 }}</p>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <div>
+                                        <small class="text-muted">Attempts: {{ data.attempts }}</small>
+                                    </div>
+                                    <a href="{% url 'student_practice:problem_detail' data.problem.id %}" class="btn btn-sm btn-outline-primary">
+                                        Continue Practice
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="alert alert-info">
+                            You haven't attempted any problems in this knowledge point yet.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card detail-card">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-lightbulb"></i> Recommended Problems
+                </div>
+                <div class="card-body">
+                    {% for problem in recommended_problems %}
+                        <div class="card problem-card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="{% url 'student_practice:problem_detail' problem.id %}">
+                                        {{ problem.title }}
+                                    </a>
+                                </h5>
+                                <div class="mb-2">
+                                    {% if problem.difficulty == 1 %}
+                                        <span class="badge badge-easy">Easy</span>
+                                    {% elif problem.difficulty == 2 %}
+                                        <span class="badge badge-medium">Medium</span>
+                                    {% else %}
+                                        <span class="badge badge-hard">Hard</span>
+                                    {% endif %}
+                                </div>
+                                <p class="card-text text-muted">{{ problem.description|truncatechars:100 }}</p>
+                                <a href="{% url 'student_practice:problem_detail' problem.id %}" class="btn btn-sm btn-success">
+                                    Start Practice
+                                </a>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="alert alert-info">
+                            No additional problems available for this knowledge point.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="card detail-card mt-4">
+                <div class="card-header bg-info text-white">
+                    <i class="fas fa-info-circle"></i> Improvement Tips
+                </div>
+                <div class="card-body">
+                    <h5>How to improve in {{ knowledge_point }}</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Review the fundamental concepts of {{ knowledge_point }}</li>
+                        <li class="list-group-item">Practice problems of increasing difficulty</li>
+                        <li class="list-group-item">Analyze your incorrect solutions to identify patterns</li>
+                        <li class="list-group-item">Set time limits to improve your problem-solving speed</li>
+                        <li class="list-group-item">Revisit solved problems to find more efficient solutions</li>
+                    </ul>
+                    
+                    <div class="mt-3">
+                        <a href="{% url 'learning_feedback:learning_path' %}" class="btn btn-info btn-block">
+                            <i class="fas fa-route"></i> Get Personalized Learning Path
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,691 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Problem Management - Code Online Judge">
+    <title>Problem Management - Code Online Judge</title>
+    <!-- Preload key resources -->
+    <link rel="preload" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}" as="style">
+    <link rel="preload" href="{% static 'js/jquery-3.7.1.js' %}" as="script">
+    <link rel="preload" href="{% static 'layui-v2.11.4/layui/layui.js' %}" as="script">
+    <!-- Import stylesheets -->
+    <link rel="stylesheet" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}">
+    <style>
+        :root {
+            --light-gray: #f5f7fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --text-dark: #343a40;
+            --text-light: #6c757d;
+            --accent-color: #5c7cfa;
+            --border-color: #dee2e6;
+            --hover-bg: #e2e6ea;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-gray);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .content {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: var(--text-dark);
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .card-header i {
+            margin-right: 12px;
+            color: var(--accent-color);
+        }
+
+        .footer {
+            background-color: white;
+            color: var(--text-light);
+            text-align: center;
+            padding: 25px 15px;
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            font-size: 15px;
+        }
+        
+        /* Breadcrumb navigation style */
+        .breadcrumb-nav {
+            background-color: white;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .breadcrumb-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .breadcrumb-item {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+        
+        .breadcrumb-item a {
+            color: var(--accent-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: #4263eb;
+            text-decoration: underline;
+        }
+        
+        .breadcrumb-separator {
+            margin: 0 8px;
+            color: var(--text-light);
+        }
+
+        /* Table toolbar style */
+        .table-toolbar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-box {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Table action buttons style */
+        .table-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .table-actions .layui-btn {
+            padding: 0 10px;
+        }
+
+        /* Problem type tag style */
+        .problem-type-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .problem-type-choice {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border: 1px solid #91d5ff;
+        }
+
+        .problem-type-fill {
+            background-color: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+
+        .problem-type-judge {
+            background-color: #fff7e6;
+            color: #fa8c16;
+            border: 1px solid #ffd591;
+        }
+
+        .problem-type-coding {
+            background-color: #f9f0ff;
+            color: #722ed1;
+            border: 1px solid #d3adf7;
+        }
+
+        .problem-type-answer {
+            background-color: #fcf4f2;
+            color: #fa541c;
+            border: 1px solid #ffbb96;
+        }
+
+        /* Difficulty tag style */
+        .difficulty-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .difficulty-easy {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border: 1px solid #91d5ff;
+        }
+
+        .difficulty-medium {
+            background-color: #fff7e6;
+            color: #fa8c16;
+            border: 1px solid #ffd591;
+        }
+
+        .difficulty-hard {
+            background-color: #fff1f0;
+            color: #f5222d;
+            border: 1px solid #ffa39e;
+        }
+
+        /* Status tag style */
+        .status-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background-color: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+
+        .status-inactive {
+            background-color: #f5f5f5;
+            color: #8c8c8c;
+            border: 1px solid #d9d9d9;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .content {
+                margin: 20px auto;
+                padding: 0 15px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .table-toolbar {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="breadcrumb-nav">
+        <div class="breadcrumb-container">
+            <span class="breadcrumb-item"><a href="/">Home</a></span>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-item">Problem Management</span>
+        </div>
+    </div>
+    <div class="content">
+        <div class="card">
+            <div class="card-header">
+                <i class="layui-icon layui-icon-list"></i>Problem Management
+            </div>
+            <div class="table-toolbar">
+                <div class="search-box">
+                    <div class="layui-input-inline">
+                        <input type="text" id="searchTitle" placeholder="Problem Title" class="layui-input">
+                    </div>
+                    <div class="layui-input-inline">
+                        <select id="searchProblemType" class="layui-select">
+                            <option value="">All Types</option>
+                            <option value="1">Multiple Choice</option>
+                            <option value="2">Fill in the Blank</option>
+                            <option value="3">True/False</option>
+                            <option value="4">Programming</option>
+                            <option value="5">Short Answer</option>
+                        </select>
+                    </div>
+                    <div class="layui-input-inline">
+                        <select id="searchKnowledgePoint" class="layui-select">
+                            <option value="">All Knowledge Points</option>
+                            <option value="conditionals">Conditionals</option>
+                            <option value="loops">Loops</option>
+                            <option value="functions">Functions</option>
+                            <option value="modules">Modules</option>
+                            <option value="arrays">Arrays</option>
+                            <option value="strings">Strings</option>
+                            <option value="recursion">Recursion</option>
+                            <option value="algorithms">Algorithms</option>
+                        </select>
+                    </div>
+                    <div class="layui-input-inline">
+                        <select id="searchDifficulty" class="layui-select">
+                            <option value="">All Difficulties</option>
+                            <option value="1">Easy</option>
+                            <option value="2">Medium</option>
+                            <option value="3">Hard</option>
+                        </select>
+                    </div>
+                    <div class="layui-input-inline">
+                        <select id="searchStatus" class="layui-select">
+                            <option value="">All Statuses</option>
+                            <option value="true">Enabled</option>
+                            <option value="false">Disabled</option>
+                        </select>
+                    </div>
+                    <button class="layui-btn layui-btn-sm" id="searchBtn">
+                        <i class="layui-icon layui-icon-search"></i> Search
+                    </button>
+                    <button class="layui-btn layui-btn-sm layui-btn-primary" id="resetBtn">
+                        <i class="layui-icon layui-icon-refresh"></i> Reset
+                    </button>
+                </div>
+                <div class="action-box">
+                    <button class="layui-btn layui-btn-sm layui-btn-normal" id="addProblemBtn">
+                        <i class="layui-icon layui-icon-add-1"></i> Add Problem
+                    </button>
+                </div>
+            </div>
+            <table id="problemTable" lay-filter="problemTable"></table>
+        </div>
+    </div>
+
+    <!-- Table action column template -->
+    <script type="text/html" id="tableActions">
+        <div class="table-actions">
+            <a class="layui-btn layui-btn-xs layui-btn-primary" lay-event="view">View</a>
+            <a class="layui-btn layui-btn-xs" lay-event="edit">Edit</a>
+            <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">Delete</a>
+        </div>
+    </script>
+
+<!-- Status switch template -->
+<script type="text/html" id="statusSwitch">
+    <input type="checkbox" name="is_active" value="{% verbatim %}{{d.id}}{% endverbatim %}" lay-skin="switch" lay-text="Enable|Disable" lay-filter="statusSwitch" {% verbatim %}{{# if(d.is_active){ }}checked{{# } }}{% endverbatim %}>
+</script>
+
+    <!-- Problem type display template -->
+    <script type="text/html" id="problemTypeTpl">
+        {% verbatim %}
+        {{# if(d.problem_type === 1){ }}
+        <span class="problem-type-tag problem-type-choice">Multiple Choice</span>
+        {{# } else if(d.problem_type === 2){ }}
+        <span class="problem-type-tag problem-type-fill">Fill in the Blank</span>
+        {{# } else if(d.problem_type === 3){ }}
+        <span class="problem-type-tag problem-type-judge">True/False</span>
+        {{# } else if(d.problem_type === 4){ }}
+        <span class="problem-type-tag problem-type-coding">Programming</span>
+        {{# } else if(d.problem_type === 5){ }}
+        <span class="problem-type-tag problem-type-answer">Short Answer</span>
+        {{# } }}
+        {% endverbatim %}
+    </script>
+
+    <!-- Difficulty display template -->
+    <script type="text/html" id="difficultyTpl">
+        {% verbatim %}
+        {{# if(d.difficulty === 1){ }}
+        <span class="difficulty-tag difficulty-easy">Easy</span>
+        {{# } else if(d.difficulty === 2){ }}
+        <span class="difficulty-tag difficulty-medium">Medium</span>
+        {{# } else if(d.difficulty === 3){ }}
+        <span class="difficulty-tag difficulty-hard">Hard</span>
+        {{# } }}
+        {% endverbatim %}
+    </script>
+
+    <!-- Status display template -->
+    <script type="text/html" id="knowledgePointTpl">
+  {# 中文知识点到英文的映射 #}
+  {# 这里定义了常见的中文知识点到英文的转换 #}
+  <span>
+    {{ d.knowledge_point === '输入输出' ? 'Input and Output' :
+       d.knowledge_point === '条件语句' ? 'Conditional Statements' :
+       d.knowledge_point === '循环结构' ? 'Loop Structures' :
+       d.knowledge_point === '数组' ? 'Arrays' :
+       d.knowledge_point === '字符串' ? 'Strings' :
+       d.knowledge_point === '函数' ? 'Functions' :
+       d.knowledge_point === '类与对象' ? 'Classes and Objects' :
+       d.knowledge_point === '异常处理' ? 'Exception Handling' :
+       d.knowledge_point }}
+  </span>
+</script>
+
+<script type="text/html" id="statusTpl">
+        {% verbatim %}
+        {{# if(d.is_active){ }}
+        <span class="status-tag status-active">Enabled</span>
+        {{# } else { }}
+        <span class="status-tag status-inactive">Disabled</span>
+        {{# } }}
+        {% endverbatim %}
+    </script>
+
+    <!-- First import jQuery -->
+    <script src="{% static 'js/jquery-3.7.1.js' %}"></script>
+    <!-- Then import Layui -->
+    <script src="{% static 'layui-v2.11.4/layui/layui.js' %}"></script>
+    <script>
+        layui.use(['table', 'layer', 'form'], function () {
+            var table = layui.table;
+            var layer = layui.layer;
+            var form = layui.form;
+
+            // Initialize table
+            var problemTable = table.render({
+                elem: '#problemTable',
+                url: '/api/problems/',
+                page: true,
+                limit: 10,
+                limits: [10, 20, 50, 100],
+                text: {
+                    none: 'No problems found. Try adding a new problem or adjusting your search criteria.',
+                    error: 'Error loading data. Please refresh the page or try again later.',
+                    loading: 'Loading problem data, please wait...'
+                },
+                // Pagination text customization
+                layPage: {
+                    first: 'First',
+                    last: 'Last',
+                    prev: 'Previous',
+                    next: 'Next',
+                    skip: 'Go to',
+                    page: 'Page',
+                    count: 'Total: ',
+                    limit: 'Limit: ',
+                    refresh: 'Refresh'
+                },
+                cols: [[
+                    { field: 'id', title: 'ID', width: 80, sort: true },
+                    { field: 'title', title: 'Problem Title', minWidth: 200 },
+                    { field: 'problem_type', title: 'Type', width: 100, templet: '#problemTypeTpl', sort: true },
+                    { field: 'knowledge_point', title: 'Knowledge Point', width: 120, templet: '#knowledgePointTpl' },
+                    { field: 'difficulty', title: 'Difficulty', width: 100, templet: '#difficultyTpl', sort: true },
+                    { field: 'submission_count', title: 'Submissions', width: 120, sort: true },
+                    { field: 'accepted_count', title: 'Accepted', width: 120, sort: true },
+                    { field: 'created_by', title: 'Creator', width: 120 },
+                    { field: 'created_at', title: 'Created At', width: 180, sort: true },
+                    { field: 'is_active', title: 'Status', width: 100, templet: '#statusTpl' },
+                    { field: 'is_active', title: 'Enable/Disable', width: 120, templet: '#statusSwitch', unresize: true },
+                    { title: 'Actions', width: 180, toolbar: '#tableActions', fixed: 'right' }
+                ]],
+                response: {
+                    statusCode: 0
+                },
+                parseData: function (res) {
+                    return {
+                        "code": res.code,
+                        "msg": res.msg,
+                        "count": res.count,
+                        "data": res.data
+                    };
+                }
+            });
+
+            // Listen for table toolbar events
+            table.on('tool(problemTable)', function (obj) {
+                var data = obj.data;
+                var event = obj.event;
+
+                if (event === 'view') {
+                    // View problem
+                    window.location.href = '/viewProblem/' + data.id + '/';
+                } else if (event === 'edit') {
+                    // Edit problem
+                    window.location.href = '/editProblem/' + data.id + '/';
+                } else if (event === 'delete') {
+                    // Delete problem
+                    layer.confirm('Are you sure you want to delete this problem?', { icon: 3, title: 'Confirmation' }, function (index) {
+                        // Send delete request
+                        $.ajax({
+                            url: '/deleteProblem/' + data.id + '/',
+                            type: 'POST',
+                            data: {
+                                csrfmiddlewaretoken: '{{ csrf_token }}'
+                            },
+                            success: function (res) {
+                                // Close loading indicator
+                                layer.close(loadingIndex);
+                                
+                                if (res.success) {
+                                    layer.msg('Problem ID ' + data.id + ' has been successfully deleted', { 
+                                        icon: 1,
+                                        time: 3000
+                                    });
+                                    // Reload table
+                                    problemTable.reload({
+                                        where: {},
+                                        page: {
+                                            curr: 1 // Return to first page after deletion
+                                        }
+                                    });
+                                } else {
+                                    layer.msg('Failed to delete problem: ' + (res.message || 'Unknown error'), { 
+                                        icon: 2,
+                                        time: 4000
+                                    });
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                // Close loading indicator
+                                layer.close(loadingIndex);
+                                
+                                layer.msg('Server error while deleting problem: ' + error, { 
+                                    icon: 2,
+                                    time: 4000
+                                });
+                            }
+                        });
+                        layer.close(index);
+                    });
+                }
+            });
+
+            // Listen for status switch events
+            form.on('switch(statusSwitch)', function (obj) {
+                var id = this.value;
+                var isActive = obj.elem.checked;
+                var tr = $(obj.elem).closest('tr');
+                
+                // Check if ID is valid
+                if (!id) {
+                    layer.msg('Invalid problem ID', { icon: 2 });
+                    obj.elem.checked = !isActive; // Restore switch status
+                    form.render('checkbox');
+                    return;
+                }
+
+                // Show informative loading layer with text prompt
+                var loadingIndex = layer.msg('', {
+                    icon: 16,
+                    shade: [0.3, '#000'],
+                    time: 0, // Don't close automatically
+                    skin: 'layui-layer-molv',
+                    anim: 2,
+                    content: '<div style="padding: 10px 0;"><i class="layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop" style="font-size: 24px; margin-right: 10px; vertical-align: middle;"></i><span style="vertical-align: middle;">' + (isActive ? 'Enabling' : 'Disabling') + ' problem ID ' + id + ', please wait...</span></div>'
+                });
+                
+                // Disable all operation buttons in the current row
+                tr.find('.layui-btn').addClass('layui-btn-disabled').attr('disabled', true);
+                
+                // Send status update request
+                $.ajax({
+                    url: '/toggleProblemStatus/' + id + '/',
+                    type: 'POST',
+                    data: {
+                        is_active: isActive,
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function (res) {
+                        // Close loading layer
+                        layer.close(loadingIndex);
+                        
+                        if (res.success) {
+                            // Update status display in table
+                            var statusCell = tr.find('td[data-field="is_active"]').first();
+                            if (isActive) {
+                                statusCell.find('.status-tag')
+                                    .removeClass('status-inactive')
+                                    .addClass('status-active')
+                                    .text('Enabled');
+                            } else {
+                                statusCell.find('.status-tag')
+                                    .removeClass('status-active')
+                                    .addClass('status-inactive')
+                                    .text('Disabled');
+                            }
+                            
+                            // Show success message
+                            layer.msg('Status ' + (isActive ? 'enabled' : 'disabled'), {
+                                icon: 1,
+                                time: 2000
+                            });
+                        } else {
+                            // If update fails, restore switch status
+                            obj.elem.checked = !isActive;
+                            form.render('checkbox');
+                            layer.msg(res.message || 'Status update failed', { icon: 2 });
+                        }
+                        
+                        // Enable all operation buttons in the current row
+                        tr.find('.layui-btn').removeClass('layui-btn-disabled').removeAttr('disabled');
+                    },
+                    error: function () {
+                        // Close loading layer
+                        layer.close(loadingIndex);
+                        
+                        // If request fails, restore switch status
+                        obj.elem.checked = !isActive;
+                        form.render('checkbox');
+                        layer.msg('Request failed, please try again later', { icon: 2 });
+                        
+                        // Enable all operation buttons in the current row
+                        tr.find('.layui-btn').removeClass('layui-btn-disabled').removeAttr('disabled');
+                    }
+                });
+            });
+
+            // Search button click event
+            $('#searchBtn').on('click', function () {
+                var title = $('#searchTitle').val();
+                var problemType = $('#searchProblemType').val();
+                var knowledgePoint = $('#searchKnowledgePoint').val();
+                var difficulty = $('#searchDifficulty').val();
+                var status = $('#searchStatus').val();
+                
+                // Show informative loading message
+                var loadingIndex = layer.msg('', {
+                    icon: 16,
+                    shade: [0.3, '#000'],
+                    time: 2000,
+                    skin: 'layui-layer-molv',
+                    anim: 2,
+                    content: '<div style="padding: 10px 0;"><i class="layui-icon layui-icon-search layui-anim layui-anim-rotate layui-anim-loop" style="font-size: 24px; margin-right: 10px; vertical-align: middle;"></i><span style="vertical-align: middle;">Searching for problems matching your criteria...</span></div>'
+                });
+
+                // Reload table with search parameters
+                problemTable.reload({
+                    where: {
+                        title: title,
+                        problem_type: problemType,
+                        knowledge_point: knowledgePoint,
+                        difficulty: difficulty,
+                        is_active: status
+                    },
+                    page: {
+                        curr: 1 // Start from page 1 again
+                    }
+                });
+            });
+
+            // Reset button click event
+            $('#resetBtn').on('click', function () {
+                $('#searchTitle').val('');
+                $('#searchProblemType').val('');
+                $('#searchKnowledgePoint').val('');
+                $('#searchDifficulty').val('');
+                $('#searchStatus').val('');
+                
+                // Show informative loading message
+                var loadingIndex = layer.msg('', {
+                    icon: 16,
+                    shade: [0.3, '#000'],
+                    time: 2000,
+                    skin: 'layui-layer-molv',
+                    anim: 2,
+                    content: '<div style="padding: 10px 0;"><i class="layui-icon layui-icon-refresh layui-anim layui-anim-rotate layui-anim-loop" style="font-size: 24px; margin-right: 10px; vertical-align: middle;"></i><span style="vertical-align: middle;">Resetting search filters and reloading all problems...</span></div>'
+                });
+
+                // Reload table, clear search conditions
+                problemTable.reload({
+                    where: {
+                        title: '',
+                        problem_type: '',
+                        knowledge_point: '',
+                        difficulty: '',
+                        is_active: ''
+                    },
+                    page: {
+                        curr: 1 // Start from page 1 again
+                    }
+                });
+            });
+
+            // Add problem button click event
+            $('#addProblemBtn').on('click', function () {
+                window.location.href = '/addProblem/';
+            });
+        });
+    </script>
+</body>
+
+</html>

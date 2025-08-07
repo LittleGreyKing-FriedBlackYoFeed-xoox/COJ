@@ -1,0 +1,543 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Code Online Judge</title>
+    <link rel="stylesheet" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}">
+    <style>
+        :root {
+            --light-gray: #f5f7fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --text-dark: #343a40;
+            --text-light: #6c757d;
+            --accent-color: #5c7cfa;
+            --border-color: #dee2e6;
+            --hover-bg: #e2e6ea;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-gray);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        /* 淡雅灰白导航栏样式 */
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: var(--text-dark);
+            font-size: 22px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .logo i {
+            margin-right: 12px;
+            font-size: 26px;
+            color: var(--accent-color);
+            background: linear-gradient(135deg, var(--accent-color), #748ffc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .content {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: var(--text-dark);
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-header i {
+            margin-right: 12px;
+            color: var(--accent-color);
+        }
+
+        .footer {
+            background-color: white;
+            color: var(--text-light);
+            text-align: center;
+            padding: 25px 15px;
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            font-size: 15px;
+        }
+
+        .breadcrumb {
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .breadcrumb a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb span {
+            color: var(--text-light);
+            margin: 0 5px;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .table-actions .layui-btn {
+            padding: 0 10px;
+            height: 30px;
+            line-height: 30px;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .role-student {
+            background-color: #20c997;
+        }
+
+        .role-teacher {
+            background-color: #fd7e14;
+        }
+
+        .role-admin {
+            background-color: #dc3545;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .status-active {
+            background-color: #28a745;
+        }
+
+        .status-inactive {
+            background-color: #6c757d;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <i class="layui-icon layui-icon-code-circle"></i>
+                Code Online Judge (LCTC)
+            </a>
+        </div>
+    </header>
+
+    <div class="content">
+        <div class="breadcrumb">
+            <a href="/">Home</a>
+            <span>/</span>
+            <a href="javascript:;">User Management</a>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <i class="layui-icon layui-icon-user"></i>
+                    User List
+                </div>
+                <div class="header-actions">
+                    <button type="button" class="layui-btn layui-btn-normal" id="addUserBtn">
+                        <i class="layui-icon layui-icon-add-1"></i> Add User
+                    </button>
+                    <button type="button" class="layui-btn layui-btn-primary" id="refreshBtn">
+                        <i class="layui-icon layui-icon-refresh"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <div class="search-box">
+                <div class="layui-input-inline" style="width: 200px;">
+                    <input type="text" id="searchUsername" placeholder="Username" autocomplete="off" class="layui-input">
+                </div>
+                <div class="layui-input-inline" style="width: 150px;">
+                    <select id="searchRole" lay-filter="searchRole">
+                        <option value="">All Roles</option>
+                        <option value="1">Student</option>
+                        <option value="2">Teacher</option>
+                        <option value="3">Admin</option>
+                    </select>
+                </div>
+                <div class="layui-input-inline" style="width: 150px;">
+                    <select id="searchStatus" lay-filter="searchStatus">
+                        <option value="">All Status</option>
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                </div>
+                <button type="button" class="layui-btn" id="searchBtn">
+                        <i class="layui-icon layui-icon-search"></i> Search
+                    </button>
+                <button type="button" class="layui-btn layui-btn-primary" id="resetBtn">
+                        <i class="layui-icon layui-icon-refresh"></i> Reset
+                    </button>
+            </div>
+
+            <table id="userTable" lay-filter="userTable"></table>
+        </div>
+    </div>
+
+    <footer class="footer">
+            © 2025 Code Online Judge. All rights reserved | Elegant code review platform
+        </footer>
+
+    <!-- 表格操作按钮模板 -->
+    <script type="text/html" id="tableActions">
+        <div class="table-actions">
+            <a class="layui-btn layui-btn-xs" lay-event="view">View</a>
+            <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="edit">Edit</a>
+            {% verbatim %}
+            {{# if(d.is_active){ }}
+            <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="disable">Disable</a>
+            {{# } else { }}
+            <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="enable">Enable</a>
+            {{# } }}
+            {% endverbatim %}
+            <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">Delete</a>
+        </div>
+    </script>
+
+    <!-- 角色格式化模板 -->
+    <script type="text/html" id="roleTpl">
+        {% verbatim %}
+        {{# if(d.role === 1){ }}
+        <span class="role-badge role-student">Student</span>
+        {{# } else if(d.role === 2){ }}
+        <span class="role-badge role-teacher">Teacher</span>
+        {{# } else if(d.role === 3){ }}
+        <span class="role-badge role-admin">Admin</span>
+        {{# } }}
+        {% endverbatim %}
+    </script>
+
+    <!-- 附加信息格式化模板 -->
+    <script type="text/html" id="additionalInfoTpl">
+        {% verbatim %}
+        {{# if(d.special_field === 'System Administrator'){ }}}
+        System Administrator
+        {{# } else { }}
+        {{d.special_field}}
+        {{# } }}
+        {% endverbatim %}
+    </script>
+
+    <!-- 状态格式化模板 -->
+    <script type="text/html" id="statusTpl">
+        {% verbatim %}
+        {{# if(d.is_active){ }}
+        <span class="status-badge status-active">Active</span>
+        {{# } else { }}
+        <span class="status-badge status-inactive">Inactive</span>
+        {{# } }}
+        {% endverbatim %}
+    </script>
+
+    <!-- 先引入jQuery -->
+    <script src="{% static 'js/jquery-3.7.1.js' %}"></script>
+    <!-- 再引入Layui -->
+    <script src="{% static 'layui-v2.11.4/layui/layui.js' %}"></script>
+    <script>
+        layui.use(['table', 'form', 'layer'], function () {
+            var table = layui.table;
+            var form = layui.form;
+            var layer = layui.layer;
+            
+            // 初始化表格
+            var userTable = table.render({
+                elem: '#userTable',
+                url: '/api/users/',
+                page: true,
+                limit: 10,
+                limits: [10, 20, 50, 100],
+                text: {
+                    none: 'No data found',
+                    refresh: 'Refresh',
+                    prev: 'Previous',
+                    next: 'Next',
+                    first: 'First',
+                    last: 'Last',
+                    count: 'Total: {count}',
+                    limit: 'per page'
+                },
+                cols: [[
+                    {field: 'id', title: 'ID', width: 80, sort: true},
+                    {field: 'username', title: 'Username', width: 120},
+                    {field: 'role', title: 'Role', width: 100, templet: '#roleTpl', sort: true},
+                    {field: 'usercode', title: 'User Code', width: 120},
+                    {field: 'special_field', title: 'Additional Info', width: 120, templet: '#additionalInfoTpl'},
+                    {field: 'is_active', title: 'Status', width: 100, templet: '#statusTpl', sort: true},
+                    {field: 'date_joined', title: 'Creation Time', width: 180, sort: true},
+                    {field: 'last_login', title: 'Last Login', width: 180, sort: true},
+                    {title: 'Actions', width: 220, align: 'center', toolbar: '#tableActions', fixed: 'right'}
+                ]],
+                // 后端已经返回了符合Layui要求的数据格式，不需要额外处理
+            });
+            
+            // 监听表格工具条事件
+            table.on('tool(userTable)', function(obj) {
+                var data = obj.data;
+                var event = obj.event;
+                
+                // 当前登录用户ID
+                var currentUserId = "{{ request.session.user_id }}";
+                
+                if (event === 'view') {
+                    // View user details - "Home / User Management / User Details"
+                    window.location.href = '/viewUser/' + data.id + '/?breadcrumb=Home|User%20Management|User%20Details';
+                } else if (event === 'edit') {
+                    // Edit user - "Home / User Management / Edit User"
+                    window.location.href = '/editUser/' + data.id + '/?breadcrumb=Home|User%20Management|Edit%20User';
+                } else if (event === 'disable') {
+                    // 禁用用户
+                    if (data.id == currentUserId) {
+                        layer.msg('Cannot disable the current logged-in user', {icon: 2});
+                        return;
+                    }
+                    
+                    layer.confirm('Are you sure you want to disable this user?', {icon: 3, title:'Confirmation'}, function(index){
+                        // 显示加载层
+                        var loadIndex = layer.load(2);
+                        
+                        // 发送AJAX请求
+                        $.ajax({
+                            url: '/toggleUserStatus/' + data.id + '/',
+                            type: 'POST',
+                            data: {
+                                is_active: false,
+                                csrfmiddlewaretoken: '{{ csrf_token }}'
+                            },
+                            dataType: 'json',
+                            success: function(res){
+                                // 关闭加载层
+                                layer.close(loadIndex);
+                                
+                                if(res.success){
+                                    layer.msg('User disabled successfully', {icon: 1});
+                                    // 刷新表格
+                                    userTable.reload();
+                                } else {
+                                    layer.msg(res.message || 'Operation failed', {icon: 2});
+                                }
+                            },
+                            error: function(){
+                                // 关闭加载层
+                                layer.close(loadIndex);
+                                layer.msg('Server error, please try again later', {icon: 2});
+                            }
+                        });
+                        
+                        layer.close(index);
+                    });
+                } else if (event === 'enable') {
+                    // 启用用户
+                    layer.confirm('Are you sure you want to enable this user?', {icon: 3, title:'Confirmation'}, function(index){
+                        // 显示加载层
+                        var loadIndex = layer.load(2);
+                        
+                        // 发送AJAX请求
+                        $.ajax({
+                            url: '/toggleUserStatus/' + data.id + '/',
+                            type: 'POST',
+                            data: {
+                                is_active: true,
+                                csrfmiddlewaretoken: '{{ csrf_token }}'
+                            },
+                            dataType: 'json',
+                            success: function(res){
+                                // 关闭加载层
+                                layer.close(loadIndex);
+                                
+                                if(res.success){
+                                    layer.msg('User enabled successfully', {icon: 1});
+                                    // 刷新表格
+                                    userTable.reload();
+                                } else {
+                                    layer.msg(res.message || 'Operation failed', {icon: 2});
+                                }
+                            },
+                            error: function(){
+                                // 关闭加载层
+                                layer.close(loadIndex);
+                                layer.msg('Server error, please try again later', {icon: 2});
+                            }
+                        });
+                        
+                        layer.close(index);
+                    });
+                } else if (event === 'delete') {
+                    // 删除用户
+                    if (data.id == currentUserId) {
+                        layer.msg('Cannot delete the current logged-in user', {icon: 2});
+                        return;
+                    }
+                    
+                    layer.confirm('Are you sure you want to delete this user? This action cannot be undone!', {icon: 3, title:'Warning'}, function(index){
+                        // 显示加载层
+                        var loadIndex = layer.load(2);
+                        
+                        // 发送AJAX请求
+                        $.ajax({
+                            url: '/deleteUser/' + data.id + '/',
+                            type: 'POST',
+                            data: {
+                                csrfmiddlewaretoken: '{{ csrf_token }}'
+                            },
+                            dataType: 'json',
+                            success: function(res){
+                                // 关闭加载层
+                                layer.close(loadIndex);
+                                
+                                if(res.success){
+                                    layer.msg('User deleted successfully', {icon: 1});
+                                    // 刷新表格
+                                    userTable.reload();
+                                } else {
+                                    layer.msg(res.message || 'Delete failed', {icon: 2});
+                                }
+                            },
+                            error: function(){
+                                // 关闭加载层
+                                layer.close(loadIndex);
+                                layer.msg('Server error, please try again later', {icon: 2});
+                            }
+                        });
+                        
+                        layer.close(index);
+                    });
+                }
+            });
+            
+            // Add user button click event - "Home / User Management / Add User"
+            $('#addUserBtn').on('click', function(){
+                window.location.href = '/addUser/?breadcrumb=Home|User%20Management|Add%20User';
+            });
+            
+            // 刷新按钮点击事件
+            $('#refreshBtn').on('click', function(){
+                userTable.reload();
+            });
+            
+            // 搜索按钮点击事件
+            $('#searchBtn').on('click', function(){
+                userTable.reload({
+                    where: {
+                        username: $('#searchUsername').val(),
+                        role: $('#searchRole').val(),
+                        is_active: $('#searchStatus').val()
+                    },
+                    page: {
+                        curr: 1
+                    }
+                });
+            });
+            
+            // 重置按钮点击事件
+            $('#resetBtn').on('click', function(){
+                $('#searchUsername').val('');
+                $('#searchRole').val('');
+                $('#searchStatus').val('');
+                form.render('select');
+                
+                userTable.reload({
+                    where: {
+                        username: '',
+                        role: '',
+                        is_active: ''
+                    },
+                    page: {
+                        curr: 1
+                    }
+                });
+            });
+            
+            // 渲染表单
+            form.render();
+        });
+    </script>
+</body>
+
+</html>

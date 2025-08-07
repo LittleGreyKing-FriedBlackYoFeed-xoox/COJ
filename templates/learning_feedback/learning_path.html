@@ -1,0 +1,308 @@
+{% extends "cojHtml/base.html" %}
+{% load static %}
+
+{% block title %}Personalized Learning Path{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}">
+<script src="{% static 'js/jquery-3.7.1.js' %}"></script>
+<script src="{% static 'layui-v2.11.4/layui/layui.js' %}"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<style>
+    .path-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        transition: transform 0.3s;
+    }
+    .path-card:hover {
+        transform: translateY(-5px);
+    }
+    .card-header {
+        border-radius: 10px 10px 0 0 !important;
+        font-weight: bold;
+    }
+    .problem-item {
+        border-left: 4px solid #007bff;
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        transition: all 0.2s;
+    }
+    .problem-item:hover {
+        background-color: #e9ecef;
+        transform: translateX(5px);
+    }
+    .badge-easy {
+        background-color: #28a745;
+    }
+    .badge-medium {
+        background-color: #fd7e14;
+    }
+    .badge-hard {
+        background-color: #dc3545;
+    }
+    .path-section {
+        position: relative;
+        padding-left: 30px;
+        margin-bottom: 30px;
+    }
+    .path-section:before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        height: 100%;
+        width: 2px;
+        background-color: #007bff;
+    }
+    .path-section:last-child:before {
+        height: 50%;
+    }
+    .path-marker {
+        position: absolute;
+        left: 8px;
+        top: 0;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: #007bff;
+    }
+    .path-title {
+        font-weight: bold;
+        margin-bottom: 15px;
+        color: #007bff;
+    }
+    .path-description {
+        margin-bottom: 20px;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="layui-fluid">
+    <div class="layui-row" style="margin-bottom: 20px;">
+        <div class="layui-col-md12">
+            <div class="layui-breadcrumb">
+                <a href="{% url 'learning_feedback:dashboard' %}">Learning Feedback</a>
+                <span lay-separator>/</span>
+                <a><cite>Learning Path</cite></a>
+            </div>
+            <div style="margin-top: 20px;">
+                <h1 style="font-size: 24px; margin-bottom: 10px;">Your Personalized Learning Path</h1>
+                <p style="color: #666;">
+                    Based on your performance, we've created a customized learning path to help you improve your skills.
+                    Follow this path to strengthen your weak areas and expand your knowledge.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-row layui-col-space20">
+        <div class="layui-col-md8">
+            <!-- Improvement Path -->
+            <div class="path-section">
+                <div class="path-marker"></div>
+                <div class="path-title">Step 1: Strengthen Your Weak Areas</div>
+                <div class="path-description">
+                    Focus on these problems to improve in areas where you're currently struggling.
+                    These problems target specific knowledge points that need improvement.
+                </div>
+                
+                <div class="layui-card path-card">
+                    <div class="layui-card-header" style="background-color: #dc3545; color: white;">
+                        <i class="fas fa-exclamation-triangle"></i> Weak Points Focus
+                    </div>
+                    <div class="layui-card-body">
+                        {% for problem in weak_point_problems %}
+                            <div class="problem-item">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <h5 style="margin: 0;">
+                                        <a href="{% url 'student_practice:problem_detail' problem.id %}">
+                                            {{ problem.title }}
+                                        </a>
+                                    </h5>
+                                    <div>
+                                        {% if problem.difficulty == 1 %}
+                                            <span class="layui-badge layui-bg-green">Easy</span>
+                                        {% elif problem.difficulty == 2 %}
+                                            <span class="layui-badge layui-bg-orange">Medium</span>
+                                        {% else %}
+                                            <span class="layui-badge layui-bg-red">Hard</span>
+                                        {% endif %}
+                                        <span class="layui-badge layui-bg-blue">{{ problem.knowledge_point }}</span>
+                                    </div>
+                                </div>
+                                <p style="color: #666; margin-top: 10px;">{{ problem.description|truncatechars:150 }}</p>
+                                <div style="display: flex; justify-content: flex-end;">
+                                    <a href="{% url 'student_practice:problem_detail' problem.id %}" class="layui-btn layui-btn-danger layui-btn-sm">
+                                        Start Practice
+                                    </a>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="layui-alert layui-bg-blue">
+                                No specific weak points identified yet. Keep practicing to get personalized recommendations.
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="path-section">
+                <div class="path-marker"></div>
+                <div class="path-title">Step 2: Explore New Knowledge Areas</div>
+                <div class="path-description">
+                    Expand your knowledge by exploring these problems from areas you haven't tried yet.
+                    This will help you develop a more well-rounded skill set.
+                </div>
+                
+                <div class="card path-card">
+                    <div class="card-header bg-primary text-white">
+                        <i class="fas fa-compass"></i> Exploration Problems
+                    </div>
+                    <div class="card-body">
+                        {% for problem in unexplored_problems %}
+                            <div class="problem-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <a href="{% url 'student_practice:problem_detail' problem.id %}">
+                                            {{ problem.title }}
+                                        </a>
+                                    </h5>
+                                    <div>
+                                        {% if problem.difficulty == 1 %}
+                                            <span class="badge badge-easy">Easy</span>
+                                        {% elif problem.difficulty == 2 %}
+                                            <span class="badge badge-medium">Medium</span>
+                                        {% else %}
+                                            <span class="badge badge-hard">Hard</span>
+                                        {% endif %}
+                                        <span class="badge badge-info">{{ problem.knowledge_point }}</span>
+                                    </div>
+                                </div>
+                                <p class="text-muted mt-2">{{ problem.description|truncatechars:150 }}</p>
+                                <div class="d-flex justify-content-end">
+                                    <a href="{% url 'student_practice:problem_detail' problem.id %}" class="btn btn-sm btn-outline-primary">
+                                        Start Practice
+                                    </a>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="alert alert-info">
+                                You've already explored many knowledge areas. Great job!
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="path-section">
+                <div class="path-marker"></div>
+                <div class="path-title">Step 3: Challenge Yourself</div>
+                <div class="path-description">
+                    Push your limits with these challenging problems in areas where you're already strong.
+                    This will help you deepen your understanding and develop advanced skills.
+                </div>
+                
+                <div class="card path-card">
+                    <div class="card-header bg-success text-white">
+                        <i class="fas fa-trophy"></i> Challenge Problems
+                    </div>
+                    <div class="card-body">
+                        {% for problem in challenge_problems %}
+                            <div class="problem-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <a href="{% url 'student_practice:problem_detail' problem.id %}">
+                                            {{ problem.title }}
+                                        </a>
+                                    </h5>
+                                    <div>
+                                        {% if problem.difficulty == 1 %}
+                                            <span class="badge badge-easy">Easy</span>
+                                        {% elif problem.difficulty == 2 %}
+                                            <span class="badge badge-medium">Medium</span>
+                                        {% else %}
+                                            <span class="badge badge-hard">Hard</span>
+                                        {% endif %}
+                                        <span class="badge badge-info">{{ problem.knowledge_point }}</span>
+                                    </div>
+                                </div>
+                                <p class="text-muted mt-2">{{ problem.description|truncatechars:150 }}</p>
+                                <div class="d-flex justify-content-end">
+                                    <a href="{% url 'student_practice:problem_detail' problem.id %}" class="btn btn-sm btn-outline-success">
+                                        Accept Challenge
+                                    </a>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="alert alert-info">
+                                Keep practicing to unlock challenge problems!
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Learning Path Summary -->
+            <div class="card path-card sticky-top" style="top: 20px;">
+                <div class="card-header bg-info text-white">
+                    <i class="fas fa-clipboard-list"></i> Learning Path Summary
+                </div>
+                <div class="card-body">
+                    <h5>Your Current Status</h5>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Problems Solved
+                            <span class="badge badge-primary badge-pill">{{ stats.total_problems_solved }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Success Rate
+                            <span class="badge badge-primary badge-pill">{{ feedback.success_rate|floatformat:1 }}%</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Knowledge Points Covered
+                            <span class="badge badge-primary badge-pill">{{ knowledge_performances|length }}</span>
+                        </li>
+                    </ul>
+                    
+                    <h5>Path Benefits</h5>
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-check-circle"></i> What you'll gain:</h6>
+                        <ul>
+                            <li>Strengthen weak knowledge areas</li>
+                            <li>Discover new problem-solving techniques</li>
+                            <li>Improve your success rate</li>
+                            <li>Reduce average solution time</li>
+                            <li>Build confidence in challenging problems</li>
+                        </ul>
+                    </div>
+                    
+                    <h5>Recommended Schedule</h5>
+                    <div class="alert alert-info">
+                        <p><strong>Daily Practice:</strong> 2-3 problems</p>
+                        <p><strong>Focus Distribution:</strong></p>
+                        <ul>
+                            <li>60% on weak areas</li>
+                            <li>20% on new knowledge points</li>
+                            <li>20% on challenge problems</li>
+                        </ul>
+                        <p><strong>Review:</strong> Revisit solved problems weekly</p>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <a href="{% url 'student_practice:problem_list' %}" class="btn btn-lg btn-primary">
+                            <i class="fas fa-code"></i> Start Practicing
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

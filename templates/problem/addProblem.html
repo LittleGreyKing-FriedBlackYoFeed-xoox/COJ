@@ -1,0 +1,334 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Add Problem - Code Online Judge">
+    <title>Add Problem - Code Online Judge</title>
+    <!-- Preload key resources -->
+    <link rel="preload" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}" as="style">
+    <link rel="preload" href="{% static 'js/jquery-3.7.1.js' %}" as="script">
+    <link rel="preload" href="{% static 'layui-v2.11.4/layui/layui.js' %}" as="script">
+    <!-- Import stylesheets -->
+    <link rel="stylesheet" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}">
+    <style>
+        :root {
+            --light-gray: #f5f7fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --text-dark: #343a40;
+            --text-light: #6c757d;
+            --accent-color: #5c7cfa;
+            --border-color: #dee2e6;
+            --hover-bg: #e2e6ea;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-gray);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        .content {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: var(--text-dark);
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .card-header i {
+            margin-right: 12px;
+            color: var(--accent-color);
+        }
+
+        /* Form style optimization */
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 30px;
+            gap: 15px;
+        }
+
+        /* Breadcrumb navigation style */
+        .breadcrumb-nav {
+            background-color: white;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .breadcrumb-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .breadcrumb-item {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+        
+        .breadcrumb-item a {
+            color: var(--accent-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: #4263eb;
+            text-decoration: underline;
+        }
+        
+        .breadcrumb-separator {
+            margin: 0 8px;
+            color: var(--text-light);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .content {
+                margin: 20px auto;
+                padding: 0 15px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="breadcrumb-nav">
+        <div class="breadcrumb-container">
+            <span class="breadcrumb-item"><a href="/">Home</a></span>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-item"><a href="/problemList/">Problem Management</a></span>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-item">Add Problem</span>
+        </div>
+    </div>
+    <div class="content">
+        <div class="card">
+            <div class="card-header">
+                <i class="layui-icon layui-icon-add-1"></i>Add Problem
+            </div>
+            <form class="layui-form" action="/addProblem/" method="post">
+                {% csrf_token %}
+                <div class="layui-form-item">
+                    <label class="layui-form-label">题目标题</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="title" required lay-verify="required" placeholder="请输入题目标题"
+                            autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Problem Type</label>
+                    <div class="layui-input-block">
+                        <select name="problem_type" lay-verify="required" lay-filter="problemType">
+                            <option value="1">Multiple Choice</option>
+                            <option value="2">Fill in the Blank</option>
+                            <option value="3">True/False</option>
+                            <option value="4">Programming</option>
+                            <option value="5">Short Answer</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Knowledge Point</label>
+                    <div class="layui-input-block">
+                        <select name="knowledge_point" lay-verify="required">
+                            <option value="">Please select knowledge point</option>
+                            <option value="判断">Conditionals</option>
+                            <option value="循环">Loops</option>
+                            <option value="函数">Functions</option>
+                            <option value="模块">Modules</option>
+                            <option value="数组">Arrays</option>
+                            <option value="字符串">Strings</option>
+                            <option value="递归">Recursion</option>
+                            <option value="算法">Algorithms</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Difficulty</label>
+                    <div class="layui-input-block">
+                        <select name="difficulty" lay-verify="required">
+                            <option value="1">Easy</option>
+                            <option value="2">Medium</option>
+                            <option value="3">Hard</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Problem Description</label>
+                    <div class="layui-input-block">
+                        <textarea name="description" required lay-verify="required" placeholder="Please enter problem description"
+                            class="layui-textarea" style="min-height: 150px;"></textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Input Description</label>
+                    <div class="layui-input-block">
+                        <textarea name="input_description" placeholder="Please enter input description" class="layui-textarea"
+                            style="min-height: 100px;"></textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Output Description</label>
+                    <div class="layui-input-block">
+                        <textarea name="output_description" placeholder="Please enter output description" class="layui-textarea"
+                            style="min-height: 100px;"></textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Sample Input</label>
+                    <div class="layui-input-block">
+                        <textarea name="sample_input" placeholder="Please enter sample input" class="layui-textarea"
+                            style="min-height: 100px;"></textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Sample Output</label>
+                    <div class="layui-input-block">
+                        <textarea name="sample_output" placeholder="Please enter sample output" class="layui-textarea"
+                            style="min-height: 100px;"></textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Hint</label>
+                    <div class="layui-input-block">
+                        <textarea name="hint" placeholder="Please enter hint (optional)" class="layui-textarea"
+                            style="min-height: 100px;"></textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Status</label>
+                    <div class="layui-input-block">
+                        <input type="checkbox" name="is_active" lay-skin="switch" lay-text="Enable|Disable" checked>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="layui-btn layui-btn-primary" id="cancelBtn">Cancel</button>
+                    <button class="layui-btn" lay-submit lay-filter="addProblemForm">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- First import jQuery -->
+    <script src="{% static 'js/jquery-3.7.1.js' %}"></script>
+    <!-- Then import Layui -->
+    <script src="{% static 'layui-v2.11.4/layui/layui.js' %}"></script>
+    <script>
+        layui.use(['form', 'layer'], function () {
+            var form = layui.form;
+            var layer = layui.layer;
+
+            // Form submission event
+            form.on('submit(addProblemForm)', function (data) {
+                // Lock interface and show informative loading prompt
+                var loadingIndex = layer.msg('Submitting problem to database, please wait...', {
+                    icon: 16,
+                    shade: [0.3, '#000'],
+                    time: 0,
+                    skin: 'layui-layer-molv',
+                    anim: 2,
+                    content: '<div style="padding: 10px 0;"><i class="layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop" style="font-size: 24px; margin-right: 10px; vertical-align: middle;"></i><span style="vertical-align: middle;">Processing your problem submission...</span></div>'
+                });
+
+                // 确保表单包含 CSRF 令牌
+                var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
+                
+                // Send AJAX request
+                $.ajax({
+                    url: '/addProblem/',
+                    type: 'POST',
+                    data: data.field,
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    },
+                    success: function (res) {
+                        // Close loading prompt
+                        layer.close(loadingIndex);
+
+                        if (res.success) {
+                            layer.msg('Problem added successfully', { icon: 1 });
+                            // Redirect to problem list page after successful addition
+                            setTimeout(function () {
+                                window.location.href = '/problemList/';
+                            }, 1000);
+                        } else {
+                            layer.msg(res.message || 'Failed to add problem', { icon: 2 });
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // Close loading prompt
+                        layer.close(loadingIndex);
+                        console.error("AJAX Error:", status, error);
+                        layer.msg('Request failed, please try again later', { icon: 2 });
+                    }
+                });
+
+                return false; // Prevent form default submission
+            });
+
+            // Cancel button click event
+            $('#cancelBtn').on('click', function () {
+                layer.confirm('Are you sure you want to cancel adding the problem? The content you have entered will not be saved.', { 
+                    icon: 3, 
+                    title: 'Confirmation',
+                    btn: ['Yes', 'No']
+                }, function (index) {
+                    window.location.href = '/problemList/';
+                    layer.close(index);
+                });
+            });
+            
+            // Debug: Add event listener to check form submission
+            $('form').on('submit', function(e) {
+                console.log('Form submitted');
+                // Don't prevent default here, let the form submit handler work
+            });
+        });
+    </script>
+</body>
+
+</html>
