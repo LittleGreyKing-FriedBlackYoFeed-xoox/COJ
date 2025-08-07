@@ -125,106 +125,67 @@ def generate_realistic_submissions(user, problems, num_submissions=NUM_SUBMISSIO
     """Generate realistic submission data for a user"""
     print(f"Generating {num_submissions} submissions for user {user.username}...")
     
-    # Define submission attributes
     languages = ['python', 'java', 'cpp', 'c', 'javascript']
     statuses = ['accepted', 'wrong_answer', 'time_limit_exceeded', 'runtime_error', 'compile_error']
-    status_weights = [0.7, 0.15, 0.08, 0.04, 0.03]  # Higher success rate for better visuals
-    
-    # Track statistics
+    status_weights = [0.7, 0.15, 0.08, 0.04, 0.03]
     problems_attempted = set()
     problems_solved = set()
     knowledge_points_data = {}
-    
-    # Create a distribution of submissions over time (more recent = more submissions)
     date_ranges = [
-        (90, 61, 0.1),  # 10% of submissions from 90-61 days ago
-        (60, 31, 0.2),  # 20% of submissions from 60-31 days ago
-        (30, 8, 0.3),   # 30% of submissions from 30-8 days ago
-        (7, 0, 0.4),    # 40% of submissions from last 7 days
+        (90, 61, 0.1),
+        (60, 31, 0.2),
+        (30, 8, 0.3),
+        (7, 0, 0.4),
     ]
-    
-    # Distribute submissions across knowledge points
     knowledge_point_weights = {}
     for kp in KNOWLEDGE_POINTS:
         knowledge_point_weights[kp] = random.uniform(0.2, 1.0)
-    
-    # Normalize weights
     total_weight = sum(knowledge_point_weights.values())
     for kp in knowledge_point_weights:
         knowledge_point_weights[kp] /= total_weight
-    
-    # Generate submissions
+    submissions_to_create = []
+    testcase_results_to_create = []
     with transaction.atomic():
         for _ in range(num_submissions):
-            # Determine submission date based on distribution
             range_choice = random.choices(
                 date_ranges, 
                 weights=[r[2] for r in date_ranges], 
                 k=1
             )[0]
-            
             days_ago = random.randint(range_choice[1], range_choice[0])
             hours_ago = random.randint(0, 23)
             minutes_ago = random.randint(0, 59)
-            
             submission_date = timezone.now() - timedelta(
                 days=days_ago,
                 hours=hours_ago,
                 minutes=minutes_ago
             )
-            
-            # Select a problem with bias towards certain knowledge points
             filtered_problems = [p for p in problems if hasattr(p, 'knowledge_point') and p.knowledge_point]
             if not filtered_problems:
                 filtered_problems = problems
-                
             weights = [knowledge_point_weights.get(getattr(p, 'knowledge_point', ''), 0.5) for p in filtered_problems]
             problem = random.choices(filtered_problems, weights=weights, k=1)[0]
-            
-            # Track knowledge point data
             kp = getattr(problem, 'knowledge_point', 'unknown')
             if kp not in knowledge_points_data:
                 knowledge_points_data[kp] = {'attempted': 0, 'solved': 0}
             knowledge_points_data[kp]['attempted'] += 1
-            
             problems_attempted.add(problem.id)
-            
-            # Choose a random language with bias towards python and javascript
-            language_weights = [0.4, 0.2, 0.2, 0.1, 0.1]  # python, java, cpp, c, javascript
+            language_weights = [0.4, 0.2, 0.2, 0.1, 0.1]
             language = random.choices(languages, weights=language_weights, k=1)[0]
-            
-            # Determine submission status with bias based on:
-            # 1. More recent submissions have higher success rate
-            # 2. Easier problems have higher success rate
-            # 3. Some knowledge points have higher success rate
-            
-            base_success_rate = status_weights[0]  # Base rate for 'accepted'
-            
-            # Adjust for recency (more recent = higher success)
-            recency_bonus = (90 - days_ago) / 90 * 0.1  # Up to 10% bonus for recent submissions
-            
-            # Adjust for difficulty (easier = higher success)
-            difficulty_factor = 0.1 if problem.difficulty == 1 else (0.0 if problem.difficulty == 2 else -0.1)
-            
-            # Adjust for knowledge point (some areas are stronger)
+            base_success_rate = status_weights[0]
+            recency_bonus = (90 - days_ago) / 90 * 0.1
+            difficulty_factor = 0.1 if getattr(problem, 'difficulty', 2) == 1 else (0.0 if getattr(problem, 'difficulty', 2) == 2 else -0.1)
             kp_factor = 0.1 if kp in ['algorithm', 'data_structure', 'programming_language'] else 0
-            
-            # Calculate final success probability
             success_prob = min(0.9, max(0.3, base_success_rate + recency_bonus + difficulty_factor + kp_factor))
-            
-            # Determine status
             if random.random() < success_prob:
                 status = 'accepted'
                 knowledge_points_data[kp]['solved'] += 1
                 problems_solved.add(problem.id)
-                execution_time = random.randint(10, 300)  # Faster execution for accepted solutions
+                execution_time = random.randint(10, 300)
             else:
                 status = random.choices(statuses[1:], weights=status_weights[1:], k=1)[0]
-                execution_time = random.randint(100, 500)  # Slower execution for failed solutions
-            
-            memory_used = random.randint(1000, 10000)  # 1MB to 10MB
-            
-            # Create submission
+                execution_time = random.randint(100, 500)
+            memory_used = random.randint(1000, 10000)
             submission = Submission(
                 user=user,
                 problem=problem,
@@ -236,98 +197,66 @@ def generate_realistic_submissions(user, problems, num_submissions=NUM_SUBMISSIO
                 created_at=submission_date,
                 updated_at=submission_date
             )
-            submission.save()
-            
-            # Create test case results for this submission
-            create_test_case_results(submission, problem, status)
+            submissions_to_create.append(submission)
     
+        Submission.objects.bulk_create(submissions_to_create, batch_size=1000)
+        # 重新获取所有刚插入的submission（假设每个用户每次只生成num_submissions条，且created_at唯一）
+        created_submissions = list(Submission.objects.filter(user=user).order_by('-created_at')[:num_submissions])
+        created_submissions.reverse()  # 保证顺序一致
+        for submission, submission_obj in zip(submissions_to_create, created_submissions):
+            # 创建test case results
+            testcase_results_to_create.extend(create_test_case_results_bulk(submission_obj, submission.problem, submission.status))
+        TestCaseResult.objects.bulk_create(testcase_results_to_create, batch_size=1000)
     print(f"Generated {num_submissions} submissions for {user.username}")
     print(f"Problems attempted: {len(problems_attempted)}, Problems solved: {len(problems_solved)}")
-    
-    # Update student statistics
     try:
         stats = StudentStatistics.objects.get(user=user)
     except StudentStatistics.DoesNotExist:
         stats = StudentStatistics(user=user)
-    
     stats.total_submissions = Submission.objects.filter(user=user).count()
     stats.accepted_submissions = Submission.objects.filter(user=user, status='accepted').count()
     stats.total_problems_attempted = len(problems_attempted)
     stats.total_problems_solved = len(problems_solved)
-    
-    # Update difficulty statistics
     stats.easy_problems_solved = Submission.objects.filter(
         user=user, status='accepted', problem__difficulty=1
     ).values('problem').distinct().count()
-    
     stats.medium_problems_solved = Submission.objects.filter(
         user=user, status='accepted', problem__difficulty=2
     ).values('problem').distinct().count()
-    
     stats.hard_problems_solved = Submission.objects.filter(
         user=user, status='accepted', problem__difficulty=3
     ).values('problem').distinct().count()
-    
     stats.last_updated = timezone.now()
     stats.save()
-    
     return knowledge_points_data
 
-def create_test_case_results(submission, problem, status):
-    """Create test case results for a submission"""
-    # Create or get test cases for the problem
+def create_test_case_results_bulk(submission, problem, status):
+    """批量生成TestCaseResult对象，不保存到数据库，返回对象列表"""
     test_cases = TestCase.objects.filter(problem=problem)
-    if not test_cases:
-        # Create 3-5 test cases for this problem
-        num_test_cases = random.randint(3, 5)
-        test_cases = []
-        for i in range(1, num_test_cases + 1):
-            test_case = TestCase(
-                problem=problem,
-                input_data=f"Test input {i} for problem {problem.id}",
-                expected_output=f"Expected output {i} for problem {problem.id}",
-                is_sample=(i == 1),  # First test case is a sample
-                created_at=timezone.now(),
-                updated_at=timezone.now()
-            )
-            test_case.save()
-            test_cases.append(test_case)
-    
-    # Create test case results
+    last_test_case = list(test_cases)[-1] if test_cases else None
+    results = []
     for test_case in test_cases:
-        # If submission was accepted, all test cases passed
-        # Otherwise, some test cases might have failed
         if status == 'accepted':
             result_status = 'passed'
-            output = test_case.expected_output
         elif status == 'wrong_answer':
-            # For wrong answer, some test cases might pass, but at least one fails
-            if random.random() < 0.3 and test_case != test_cases[-1]:
+            if random.random() < 0.3 and test_case != last_test_case:
                 result_status = 'passed'
-                output = test_case.expected_output
             else:
                 result_status = 'failed'
-                output = f"Wrong output for test case {test_case.id}"
-        elif status == 'time_limit_exceeded':
-            result_status = 'timeout'
-            output = "Time limit exceeded"
-        elif status == 'runtime_error':
-            result_status = 'error'
-            output = "Runtime error occurred"
-        else:  # compile_error
-            result_status = 'error'
-            output = "Compilation failed"
-        
-        # Create the test case result
-        test_result = TestCaseResult(
+        else:
+            result_status = 'failed'
+        execution_time = random.randint(10, 500)
+        memory_used = random.randint(1000, 5000)
+        error_message = ''
+        results.append(TestCaseResult(
             submission=submission,
             test_case=test_case,
             status=result_status,
-            output=output,
-            execution_time=random.randint(10, 500),
-            memory_used=random.randint(1000, 5000)
-        )
-        test_result.save()
+            execution_time=execution_time,
+            memory_used=memory_used,
+            error_message=error_message
+        ))
+    return results
 
 def generate_realistic_feedback(user, knowledge_points_data):
     """Generate realistic learning feedback based on submission data"""
@@ -435,15 +364,14 @@ def generate_realistic_feedback(user, knowledge_points_data):
         
         # Calculate average attempts per problem
         if data['attempted'] > 0:
-            avg_attempts = Submission.objects.filter(
+            attempts_qs = Submission.objects.filter(
                 user=user,
                 problem__knowledge_point=kp
             ).values('problem').annotate(
                 attempt_count=Count('id')
-            ).aggregate(
-                avg_attempts=Avg('attempt_count')
-            )['avg_attempts'] or 1
-            
+            )
+            attempt_counts = [item['attempt_count'] for item in attempts_qs]
+            avg_attempts = sum(attempt_counts) / len(attempt_counts) if attempt_counts else 1
             performance.average_attempts = avg_attempts
         else:
             performance.average_attempts = 0
@@ -464,35 +392,27 @@ def generate_realistic_feedback(user, knowledge_points_data):
     print(f"Updated knowledge point performances for {user.username}")
 
 def populate_learning_feedback_data():
-    """Main function to populate learning feedback data"""
+    """为所有学生用户生成学习反馈数据"""
     try:
-        # Get the first student user (assuming this is the logged-in user)
-        user = CustomUser.objects.filter(role=1).first()
-        
-        if not user:
+        students = list(CustomUser.objects.filter(role=1))
+        if not students:
             print("No student users found. Please create at least one student user first.")
             return
-        
-        print(f"Populating learning feedback data for user: {user.username}")
-        
-        # Create sample problems
+        total_students = len(students)
+        print(f"Processing all {total_students} users...")
         problems = create_sample_problems(NUM_PROBLEMS)
-        
-        # Generate submissions
-        knowledge_points_data = generate_realistic_submissions(user, problems, NUM_SUBMISSIONS)
-        
-        # Generate learning feedback
-        generate_realistic_feedback(user, knowledge_points_data)
-        
-        print(f"Successfully populated learning feedback data for {user.username}")
-        print("You can now view the learning feedback dashboard at http://127.0.0.1:8000/student/dashboard/")
-        
+        for user in students:
+            print(f"Populating learning feedback data for user: {user.username}")
+            knowledge_points_data = generate_realistic_submissions(user, problems, NUM_SUBMISSIONS)
+            generate_realistic_feedback(user, knowledge_points_data)
+            print(f"Successfully populated learning feedback data for {user.username}")
+        print("All users done! You can now view the learning feedback dashboard at http://127.0.0.1:8000/student/dashboard/")
     except Exception as e:
         print(f"Error populating learning feedback data: {str(e)}")
         import traceback
         traceback.print_exc()
 
 if __name__ == "__main__":
-    print("Starting to populate learning feedback data...")
+    print("Starting to populate learning feedback data for all users...")
     populate_learning_feedback_data()
     print("Done!")

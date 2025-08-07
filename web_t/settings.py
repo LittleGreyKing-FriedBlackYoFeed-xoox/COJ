@@ -41,13 +41,20 @@ INSTALLED_APPS = [
     "own_models",
     "permission_system",  # 权限管理系统
 ]
+# 允许所有主机的请求（开发环境临时方案）
+ALLOWED_HOSTS = ['*'] 
 CSRF_TRUSTED_ORIGINS = [
-    "https://xovkvv-toieuf-8000.app.cloudstudio.work",
-    "https://jaqwhj-jsjlci-8000.app.cloudstudio.work",
-    "https://eurzuj-bvmayq-8000.app.cloudstudio.work",
+    "https://*.app.cloudstudio.work",
+    "https://*.cloudstudio.cn"  # 如果使用国内版加上此项
     # 其他可信来源...
     "http://127.0.0.1:8000/"
 ]
+# 正式部署时应替换为具体域名
+# CSRF_TRUSTED_ORIGINS = [
+#     "https://your-production-domain.com",
+# ]
+# ALLOWED_HOSTS = ["your-production-domain.com"]
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

@@ -76,9 +76,9 @@ class LearningFeedback(models.Model):
         self.average_completion_time = avg_time['avg_time'] if avg_time['avg_time'] else 0
         
         # Analyze strengths (problems solved with good performance)
+        # 原有 ORM 写法不支持跨表 avg 聚合，改为仅统计 accepted 数量最多的知识点
         strength_submissions = submissions.filter(
-            status='accepted',
-            execution_time__lt=models.F('problem__submissions__execution_time__avg')
+            status='accepted'
         ).values('problem__knowledge_point').annotate(count=Count('id')).order_by('-count')[:5]
         
         strengths = []
