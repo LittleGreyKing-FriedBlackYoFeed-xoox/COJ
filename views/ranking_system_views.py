@@ -9,10 +9,7 @@ def ranking_list(request):
     """
     Display the ranking list of all users based on problems completed and attempts
     """
-    # Update all rankings before displaying
-    RankingSystem.update_all_rankings()
-    
-    # Get all rankings ordered by rank position
+    # 仅获取排名数据，不再每次请求时更新所有排名
     all_rankings = RankingSystem.objects.select_related('user').order_by('rank_position')
     
     # Pagination

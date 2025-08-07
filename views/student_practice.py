@@ -135,6 +135,26 @@ def student_problem_detail(request, problem_id):
     if 'user_id' not in request.session or request.session.get('user_role') not in [1, 3]:
         return redirect('index')
     
+    # 新增：处理AJAX刷新提交历史的请求
+    if request.GET.get('partial') == 'submissions':
+        user_id = request.session.get('user_id')
+        user = CustomUser.objects.get(id=user_id)
+        problem = get_object_or_404(Problem, id=problem_id, is_active=True)
+        # 不使用缓存，直接查数据库
+        submissions = list(Submission.objects.filter(user=user, problem=problem).order_by('-created_at')[:20])
+        # 构造JSON数据
+        submissions_data = []
+        for s in submissions:
+            submissions_data.append({
+                'id': s.id,
+                'created_at': s.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                'language_display': s.get_language_display() if hasattr(s, 'get_language_display') else s.language,
+                'status': s.status,
+                'status_display': getattr(s, 'get_status_display', lambda: s.status)(),
+                'execution_time': s.execution_time,
+                'memory_used': s.memory_used,
+            })
+        return JsonResponse({'submissions': submissions_data})
     try:
         # 获取题目 - 使用缓存
         cache_key = f'problem_detail_{problem_id}'
