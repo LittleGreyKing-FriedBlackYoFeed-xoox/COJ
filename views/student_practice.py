@@ -200,6 +200,15 @@ def student_problem_detail(request, problem_id):
         if total_submissions > 0:
             user_pass_rate = (accepted_count / total_submissions) * 100
         
+        # 添加英文题型文本属性
+        problem_type_map = {
+            1: 'Multiple Choice',
+            2: 'Fill in the Blank',
+            3: 'True/False',
+            4: 'Programming',
+            5: 'Short Answer'
+        }
+        setattr(problem, 'problem_type_text', problem_type_map.get(problem.problem_type, 'Unknown'))
         return render(request, 'student_practice/problem_detail.html', {
             'problem': problem,
             'submissions': submissions,
