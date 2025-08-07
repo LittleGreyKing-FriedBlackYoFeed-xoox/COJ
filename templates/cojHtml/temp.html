@@ -243,20 +243,19 @@
         document.addEventListener('DOMContentLoaded', function() {
             const jumpBtn = document.getElementById('jumpBtn');
             const container = document.querySelector('.embedded-container');
-            
-            jumpBtn.addEventListener('click', function() {
-                // 添加加载状态
-                container.classList.add('loading');
-                
-                // 更新按钮文本
-                jumpBtn.innerHTML = '<i class="fas fa-external-link-alt"></i> 正在跳转...';
-                
-                // 模拟跳转过程
-                setTimeout(() => {
-                    // 实际跳转操作
-                    window.location.href = 'https://cloudstudio.net';
-                }, 1500);
-            });
+            if (jumpBtn) {
+                jumpBtn.addEventListener('click', function() {
+                    // 添加加载状态
+                    container.classList.add('loading');
+                    // 更新按钮文本
+                    jumpBtn.innerHTML = '<i class="fas fa-external-link-alt"></i> 正在跳转...';
+                    // 模拟跳转过程
+                    setTimeout(() => {
+                        // 实际跳转操作
+                        window.location.href = 'https://cloudstudio.net';
+                    }, 1500);
+                });
+            }
         });
     </script>
 </body>

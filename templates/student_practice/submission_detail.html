@@ -450,24 +450,23 @@
             });
             
             // 复制代码功能
-            document.getElementById('copy-code').addEventListener('click', function() {
-                var codeText = document.querySelector('.code-block code').textContent;
-                
-                // 创建临时textarea元素
-                var textarea = document.createElement('textarea');
-                textarea.value = codeText;
-                document.body.appendChild(textarea);
-                
-                // 选择并复制文本
-                textarea.select();
-                document.execCommand('copy');
-                
-                // 移除临时元素
-                document.body.removeChild(textarea);
-                
-                // 显示提示
-                layer.msg('代码已复制到剪贴板', {icon: 1});
-            });
+            var copyCodeBtn = document.getElementById('copy-code');
+            if (copyCodeBtn) {
+                copyCodeBtn.addEventListener('click', function() {
+                    var codeText = document.querySelector('.code-block code').textContent;
+                    // 创建临时textarea元素
+                    var textarea = document.createElement('textarea');
+                    textarea.value = codeText;
+                    document.body.appendChild(textarea);
+                    // 选择并复制文本
+                    textarea.select();
+                    document.execCommand('copy');
+                    // 移除临时元素
+                    document.body.removeChild(textarea);
+                    // 显示提示
+                    layer.msg('代码已复制到剪贴板', {icon: 1});
+                });
+            }
             
             // 如果状态是评测中，定时刷新页面
             {% if submission.status == 'pending' %}
