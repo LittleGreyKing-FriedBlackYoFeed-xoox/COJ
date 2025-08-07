@@ -1,11 +1,11 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Code Online Judge - 优雅简洁的代码评审平台">
+    <meta name="description" content="Code Online Judge - Elegant and concise code review platform">
     <title>Code Online Judge Index</title>
     <!-- 预加载关键资源 -->
     <link rel="preload" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}" as="style">
@@ -692,11 +692,11 @@
                 <div class="user-menu">
                     <div class="user-avatar">
                         {% if request.session.user_role == 1 %}
-                        学
+                        S
                         {% elif request.session.user_role == 2 %}
-                        教
+                        T
                         {% elif request.session.user_role == 3 %}
-                        管
+                        A
                         {% else %}
                         {{ request.session.username|first|upper }}
                         {% endif %}

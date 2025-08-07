@@ -1,17 +1,17 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="题目详情 - Code Online Judge">
-    <title>题目详情 - Code Online Judge</title>
-    <!-- 预加载关键资源 -->
+    <meta name="description" content="Problem Detail - Code Online Judge">
+    <title>Problem Detail - Code Online Judge</title>
+    <!-- Preload key resources -->
     <link rel="preload" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}" as="style">
     <link rel="preload" href="{% static 'js/jquery-3.7.1.js' %}" as="script">
     <link rel="preload" href="{% static 'layui-v2.11.4/layui/layui.js' %}" as="script">
-    <!-- 引入样式表 -->
+    <!-- Import stylesheets -->
     <link rel="stylesheet" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}">
     <style>
         :root {
@@ -283,11 +283,11 @@
 <body>
     <div class="breadcrumb-nav">
         <div class="breadcrumb-container">
-            <span class="breadcrumb-item"><a href="/">首页</a></span>
+            <span class="breadcrumb-item"><a href="/">Home</a></span>
             <span class="breadcrumb-separator">/</span>
-            <span class="breadcrumb-item"><a href="/problemList/">题目管理</a></span>
+            <span class="breadcrumb-item"><a href="/problemList/">Problem Management</a></span>
             <span class="breadcrumb-separator">/</span>
-            <span class="breadcrumb-item">题目详情</span>
+            <span class="breadcrumb-item">Problem Detail</span>
         </div>
     </div>
     <div class="content">
@@ -299,78 +299,78 @@
                 </div>
                 <div class="card-actions">
                     <button class="layui-btn layui-btn-primary" id="backBtn">
-                        <i class="layui-icon layui-icon-return"></i> 返回
+                        <i class="layui-icon layui-icon-return"></i> Back
                     </button>
                     <button class="layui-btn" id="editBtn">
-                        <i class="layui-icon layui-icon-edit"></i> 编辑
+                        <i class="layui-icon layui-icon-edit"></i> Edit
                     </button>
                 </div>
             </div>
 
             <div class="meta-info">
                 <div class="meta-item">
-                    <span class="meta-label">题型：</span>
+                    <span class="meta-label">Type:</span>
                     <span class="meta-value">
                         {% if problem.problem_type == 1 %}
-                        <span class="problem-type-tag problem-type-choice">选择题</span>
+                        <span class="problem-type-tag problem-type-choice">Multiple Choice</span>
                         {% elif problem.problem_type == 2 %}
-                        <span class="problem-type-tag problem-type-fill">填空题</span>
+                        <span class="problem-type-tag problem-type-fill">Fill in the Blank</span>
                         {% elif problem.problem_type == 3 %}
-                        <span class="problem-type-tag problem-type-judge">判断题</span>
+                        <span class="problem-type-tag problem-type-judge">True/False</span>
                         {% elif problem.problem_type == 4 %}
-                        <span class="problem-type-tag problem-type-coding">编程题</span>
+                        <span class="problem-type-tag problem-type-coding">Programming</span>
                         {% elif problem.problem_type == 5 %}
-                        <span class="problem-type-tag problem-type-answer">简答题</span>
+                        <span class="problem-type-tag problem-type-answer">Short Answer</span>
                         {% endif %}
                     </span>
                 </div>
                 <div class="meta-item">
-                    <span class="meta-label">难度：</span>
+                    <span class="meta-label">Difficulty:</span>
                     <span class="meta-value">
                         {% if problem.difficulty == 1 %}
-                        <span class="difficulty-tag difficulty-easy">简单</span>
+                        <span class="difficulty-tag difficulty-easy">Easy</span>
                         {% elif problem.difficulty == 2 %}
-                        <span class="difficulty-tag difficulty-medium">中等</span>
+                        <span class="difficulty-tag difficulty-medium">Medium</span>
                         {% elif problem.difficulty == 3 %}
-                        <span class="difficulty-tag difficulty-hard">困难</span>
+                        <span class="difficulty-tag difficulty-hard">Hard</span>
                         {% endif %}
                     </span>
                 </div>
                 <div class="meta-item">
-                    <span class="meta-label">状态：</span>
+                    <span class="meta-label">Status:</span>
                     <span class="meta-value">
                         {% if problem.is_active %}
-                        <span class="status-tag status-active">已启用</span>
+                        <span class="status-tag status-active">Active</span>
                         {% else %}
-                        <span class="status-tag status-inactive">已禁用</span>
+                        <span class="status-tag status-inactive">Inactive</span>
                         {% endif %}
                     </span>
                 </div>
                 <div class="meta-item">
-                    <span class="meta-label">提交次数：</span>
+                    <span class="meta-label">Submissions:</span>
                     <span class="meta-value">{{ problem.submission_count }}</span>
                 </div>
                 <div class="meta-item">
-                    <span class="meta-label">通过次数：</span>
+                    <span class="meta-label">Accepted:</span>
                     <span class="meta-value">{{ problem.accepted_count }}</span>
                 </div>
                 <div class="meta-item">
-                    <span class="meta-label">创建者：</span>
+                    <span class="meta-label">Created by:</span>
                     <span class="meta-value">{{ problem.created_by }}</span>
                 </div>
                 <div class="meta-item">
-                    <span class="meta-label">创建时间：</span>
+                    <span class="meta-label">Created at:</span>
                     <span class="meta-value">{{ problem.created_at|date:'Y-m-d H:i:s' }}</span>
                 </div>
                 <div class="meta-item">
-                    <span class="meta-label">更新时间：</span>
+                    <span class="meta-label">Updated at:</span>
                     <span class="meta-value">{{ problem.updated_at|date:'Y-m-d H:i:s' }}</span>
                 </div>
             </div>
 
             <div class="section">
                 <div class="section-title">
-                    <i class="layui-icon layui-icon-dialogue"></i>题目描述
+                    <i class="layui-icon layui-icon-dialogue"></i>Description
                 </div>
                 <div class="section-content">{{ problem.description }}</div>
             </div>
@@ -378,7 +378,7 @@
             {% if problem.input_description %}
             <div class="section">
                 <div class="section-title">
-                    <i class="layui-icon layui-icon-transfer"></i>输入描述
+                    <i class="layui-icon layui-icon-transfer"></i>Input Description
                 </div>
                 <div class="section-content">{{ problem.input_description }}</div>
             </div>
@@ -387,7 +387,7 @@
             {% if problem.output_description %}
             <div class="section">
                 <div class="section-title">
-                    <i class="layui-icon layui-icon-transfer"></i>输出描述
+                    <i class="layui-icon layui-icon-transfer"></i>Output Description
                 </div>
                 <div class="section-content">{{ problem.output_description }}</div>
             </div>
@@ -396,7 +396,7 @@
             {% if problem.sample_input %}
             <div class="section">
                 <div class="section-title">
-                    <i class="layui-icon layui-icon-console"></i>样例输入
+                    <i class="layui-icon layui-icon-console"></i>Sample Input
                 </div>
                 <div class="section-content">{{ problem.sample_input }}</div>
             </div>
@@ -405,7 +405,7 @@
             {% if problem.sample_output %}
             <div class="section">
                 <div class="section-title">
-                    <i class="layui-icon layui-icon-console"></i>样例输出
+                    <i class="layui-icon layui-icon-console"></i>Sample Output
                 </div>
                 <div class="section-content">{{ problem.sample_output }}</div>
             </div>
@@ -414,7 +414,7 @@
             {% if problem.hint %}
             <div class="section">
                 <div class="section-title">
-                    <i class="layui-icon layui-icon-tips"></i>提示
+                    <i class="layui-icon layui-icon-tips"></i>Hint
                 </div>
                 <div class="section-content">{{ problem.hint }}</div>
             </div>
@@ -422,20 +422,20 @@
         </div>
     </div>
 
-    <!-- 先引入jQuery -->
+    <!-- jQuery -->
     <script src="{% static 'js/jquery-3.7.1.js' %}"></script>
-    <!-- 再引入Layui -->
+    <!-- Layui -->
     <script src="{% static 'layui-v2.11.4/layui/layui.js' %}"></script>
     <script>
         layui.use(['layer'], function () {
             var layer = layui.layer;
 
-            // 返回按钮点击事件
+            // Back button click event
             $('#backBtn').on('click', function () {
                 window.location.href = '/problemList/';
             });
 
-            // 编辑按钮点击事件
+            // Edit button click event
             $('#editBtn').on('click', function () {
                 window.location.href = '/editProblem/{{ problem.id }}/';
             });

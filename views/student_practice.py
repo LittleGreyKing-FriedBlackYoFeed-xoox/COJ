@@ -70,10 +70,18 @@ def student_problem_list(request):
             submission_status[problem_id] = 'attempted'
     
     # 为每个题目添加状态信息 - 使用列表推导式优化
+    problem_type_map = {
+        1: 'Multiple Choice',
+        2: 'Fill in the Blank',
+        3: 'True/False',
+        4: 'Programming',
+        5: 'Short Answer'
+    }
     problem_list = [{
         'id': problem.id,
         'title': problem.title,
         'problem_type': problem.problem_type,
+        'problem_type_text': problem_type_map.get(problem.problem_type, str(problem.problem_type)),
         'difficulty': problem.difficulty,
         'submission_count': problem.submission_count,
         'accepted_count': problem.accepted_count,
