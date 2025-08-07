@@ -1,0 +1,62 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Django
+*.log
+db.sqlite3
+media/
+staticfiles/
+
+# VSCode
+.vscode/
+
+# MySQL dumps
+*.sql
+
+# 环境配置
+.env
+*.env
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# pycache
+**/__pycache__/
+
+# Pip
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Test
+htmlcov/
+.coverage
+.tox/
+.nox/
+
+# Migrations
+*/migrations/*
+!*/migrations/__init__.py
+
+# IDEs
+.idea/
+*.iml
+
+# Node
+node_modules/
+
+# 其他临时文件
+*.swp
+*.swo
+*.bak
+*.tmp
