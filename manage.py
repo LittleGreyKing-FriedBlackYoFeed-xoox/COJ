@@ -20,7 +20,16 @@ python manage.py runserver
     
     deactivate退出虚拟环境，回到正常终端
 
-    push code to github test
+    # 1. 临时保存所有修改
+    git stash
+
+    # 2. 拉取远程代码
+    git pull
+
+    # 3. 恢复暂存的修改（可能需解决冲突）
+    git stash pop
+
+
 
 """
 if __name__ == "__main__":
