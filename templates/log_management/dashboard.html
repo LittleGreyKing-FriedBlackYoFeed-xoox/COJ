@@ -1,0 +1,270 @@
+{% extends 'log_management/base.html' %}
+
+{% block title %}日志管理仪表板{% endblock %}
+
+{% block breadcrumb %}
+<a><cite>仪表板</cite></a>
+{% endblock %}
+
+{% block content %}
+<!-- 统计卡片 -->
+<div class="layui-row layui-col-space16">
+    <div class="layui-col-md3 layui-col-sm6">
+        <div class="stat-card">
+            <div class="stat-number" style="color: var(--primary-color);">{{ today_stats.system_logs }}</div>
+            <div class="stat-label">今日系统日志</div>
+            <div class="stat-trend">
+                {% if today_stats.system_logs >= yesterday_stats.system_logs %}
+                    <span class="trend-up">↑ {{ today_stats.system_logs|add:"-"|add:yesterday_stats.system_logs }}</span>
+                {% else %}
+                    <span class="trend-down">↓ {{ yesterday_stats.system_logs|add:"-"|add:today_stats.system_logs }}</span>
+                {% endif %}
+                较昨日
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md3 layui-col-sm6">
+        <div class="stat-card">
+            <div class="stat-number" style="color: var(--success-color);">{{ today_stats.user_operations }}</div>
+            <div class="stat-label">今日用户操作</div>
+            <div class="stat-trend">
+                {% if today_stats.user_operations >= yesterday_stats.user_operations %}
+                    <span class="trend-up">↑ {{ today_stats.user_operations|add:"-"|add:yesterday_stats.user_operations }}</span>
+                {% else %}
+                    <span class="trend-down">↓ {{ yesterday_stats.user_operations|add:"-"|add:today_stats.user_operations }}</span>
+                {% endif %}
+                较昨日
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md3 layui-col-sm6">
+        <div class="stat-card">
+            <div class="stat-number" style="color: var(--error-color);">{{ today_stats.errors }}</div>
+            <div class="stat-label">今日错误日志</div>
+            <div class="stat-trend">
+                {% if today_stats.errors >= yesterday_stats.errors %}
+                    <span class="trend-up">↑ {{ today_stats.errors|add:"-"|add:yesterday_stats.errors }}</span>
+                {% else %}
+                    <span class="trend-down">↓ {{ yesterday_stats.errors|add:"-"|add:today_stats.errors }}</span>
+                {% endif %}
+                较昨日
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md3 layui-col-sm6">
+        <div class="stat-card">
+            <div class="stat-number" style="color: var(--warning-color);">{{ today_stats.logins }}</div>
+            <div class="stat-label">今日登录次数</div>
+            <div class="stat-trend">
+                {% if today_stats.logins >= yesterday_stats.logins %}
+                    <span class="trend-up">↑ {{ today_stats.logins|add:"-"|add:yesterday_stats.logins }}</span>
+                {% else %}
+                    <span class="trend-down">↓ {{ yesterday_stats.logins|add:"-"|add:today_stats.logins }}</span>
+                {% endif %}
+                较昨日
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 快速导航 -->
+<div class="log-card" style="margin-top: 24px;">
+    <div class="log-card-header">
+        <i class="layui-icon layui-icon-app"></i> 快速导航
+    </div>
+    <div class="log-card-body">
+        <div class="layui-row layui-col-space16">
+            <div class="layui-col-md3 layui-col-sm6">
+                <a href="{% url 'log_management:system_logs' %}" class="layui-btn layui-btn-fluid layui-btn-lg">
+                    <i class="layui-icon layui-icon-log"></i> 系统日志
+                </a>
+            </div>
+            <div class="layui-col-md3 layui-col-sm6">
+                <a href="{% url 'log_management:user_operations' %}" class="layui-btn layui-btn-fluid layui-btn-lg layui-btn-normal">
+                    <i class="layui-icon layui-icon-user"></i> 用户操作
+                </a>
+            </div>
+            <div class="layui-col-md3 layui-col-sm6">
+                <a href="{% url 'log_management:error_logs' %}" class="layui-btn layui-btn-fluid layui-btn-lg layui-btn-danger">
+                    <i class="layui-icon layui-icon-close"></i> 错误日志
+                </a>
+            </div>
+            <div class="layui-col-md3 layui-col-sm6">
+                <a href="{% url 'log_management:login_logs' %}" class="layui-btn layui-btn-fluid layui-btn-lg layui-btn-warm">
+                    <i class="layui-icon layui-icon-login"></i> 登录日志
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 重要信息 -->
+<div class="layui-row layui-col-space16" style="margin-top: 24px;">
+    <!-- 未解决错误 -->
+    <div class="layui-col-md6">
+        <div class="log-card">
+            <div class="log-card-header">
+                <i class="layui-icon layui-icon-close" style="color: var(--error-color);"></i> 
+                未解决错误 ({{ error_stats.unresolved }})
+            </div>
+            <div class="log-card-body">
+                {% if recent_errors %}
+                    <div class="layui-timeline">
+                        {% for error in recent_errors %}
+                        <div class="layui-timeline-item">
+                            <i class="layui-icon layui-timeline-axis layui-icon-close" style="color: var(--error-color);"></i>
+                            <div class="layui-timeline-content layui-text">
+                                <h3 class="layui-timeline-title">{{ error.error_time|date:"m-d H:i" }}</h3>
+                                <p>
+                                    <span class="layui-badge layui-bg-red">{{ error.get_error_type_display }}</span>
+                                    {{ error.error_message|truncatechars:80 }}
+                                </p>
+                                <p style="margin-top: 8px;">
+                                    <a href="{% url 'log_management:error_log_detail' error.id %}" class="layui-btn layui-btn-xs">查看详情</a>
+                                </p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="layui-empty">
+                        <i class="layui-icon layui-icon-face-smile" style="font-size: 48px; color: var(--success-color);"></i>
+                        <p>暂无未解决的错误</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 最近系统日志 -->
+    <div class="layui-col-md6">
+        <div class="log-card">
+            <div class="log-card-header">
+                <i class="layui-icon layui-icon-log" style="color: var(--primary-color);"></i> 
+                最近系统日志
+            </div>
+            <div class="log-card-body">
+                {% if recent_system_logs %}
+                    <div class="layui-timeline">
+                        {% for log in recent_system_logs %}
+                        <div class="layui-timeline-item">
+                            <i class="layui-icon layui-timeline-axis layui-icon-log" style="color: var(--primary-color);"></i>
+                            <div class="layui-timeline-content layui-text">
+                                <h3 class="layui-timeline-title">{{ log.created_time|date:"m-d H:i" }}</h3>
+                                <p>
+                                    <span class="layui-badge log-level-{{ log.level|lower }}">{{ log.level }}</span>
+                                    <span class="layui-badge layui-bg-blue">{{ log.get_log_type_display }}</span>
+                                    {{ log.title }}
+                                </p>
+                                <p style="margin-top: 8px;">
+                                    <a href="{% url 'log_management:system_log_detail' log.id %}" class="layui-btn layui-btn-xs">查看详情</a>
+                                </p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="layui-empty">
+                        <i class="layui-icon layui-icon-log" style="font-size: 48px; color: #ccc;"></i>
+                        <p>暂无系统日志</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 最近登录日志 -->
+<div class="log-card" style="margin-top: 24px;">
+    <div class="log-card-header">
+        <i class="layui-icon layui-icon-login" style="color: var(--warning-color);"></i> 
+        最近登录日志
+    </div>
+    <div class="log-card-body">
+        {% if recent_logins %}
+            <table class="layui-table">
+                <thead>
+                    <tr>
+                        <th>用户名</th>
+                        <th>状态</th>
+                        <th>IP地址</th>
+                        <th>地理位置</th>
+                        <th>登录时间</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for login in recent_logins %}
+                    <tr>
+                        <td>{{ login.username }}</td>
+                        <td>
+                            {% if login.login_status == 'SUCCESS' %}
+                                <span class="layui-badge layui-bg-green">成功</span>
+                            {% elif login.login_status == 'FAILED' %}
+                                <span class="layui-badge layui-bg-red">失败</span>
+                            {% else %}
+                                <span class="layui-badge layui-bg-orange">被阻止</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ login.login_ip }}</td>
+                        <td>{{ login.city|default:"-" }}</td>
+                        <td>{{ login.login_time|date:"Y-m-d H:i:s" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="layui-empty">
+                <i class="layui-icon layui-icon-login" style="font-size: 48px; color: #ccc;"></i>
+                <p>暂无登录日志</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 系统状态 -->
+<div class="log-card" style="margin-top: 24px;">
+    <div class="log-card-header">
+        <i class="layui-icon layui-icon-chart" style="color: var(--success-color);"></i> 
+        系统状态概览
+    </div>
+    <div class="log-card-body">
+        <div class="layui-row layui-col-space16">
+            <div class="layui-col-md3">
+                <div style="text-align: center; padding: 16px;">
+                    <div style="font-size: 24px; color: var(--primary-color); margin-bottom: 8px;">{{ week_stats.system_logs }}</div>
+                    <div style="color: #666;">本周系统日志</div>
+                </div>
+            </div>
+            <div class="layui-col-md3">
+                <div style="text-align: center; padding: 16px;">
+                    <div style="font-size: 24px; color: var(--success-color); margin-bottom: 8px;">{{ week_stats.user_operations }}</div>
+                    <div style="color: #666;">本周用户操作</div>
+                </div>
+            </div>
+            <div class="layui-col-md3">
+                <div style="text-align: center; padding: 16px;">
+                    <div style="font-size: 24px; color: var(--error-color); margin-bottom: 8px;">{{ error_stats.unresolved }}</div>
+                    <div style="color: #666;">未解决错误</div>
+                </div>
+            </div>
+            <div class="layui-col-md3">
+                <div style="text-align: center; padding: 16px;">
+                    <div style="font-size: 24px; color: var(--warning-color); margin-bottom: 8px;">{{ error_stats.critical }}</div>
+                    <div style="color: #666;">本周严重错误</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // 自动刷新页面数据（每5分钟）
+    setInterval(function() {
+        location.reload();
+    }, 300000);
+});
+</script>
+{% endblock %}

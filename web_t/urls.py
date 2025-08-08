@@ -36,4 +36,7 @@ urlpatterns = [
     path("teacher/competitions/", include("urls.organize_competitions_urls")),
     # 人工复核系统URL
     path("manual_review/", include(("urls.manual_review_urls", "manual_review"), namespace="manual_review")),
+    
+    # 日志管理系统URL
+    path("log_management/", include(("urls.log_management_urls", "log_management"), namespace="log_management")),
 ]

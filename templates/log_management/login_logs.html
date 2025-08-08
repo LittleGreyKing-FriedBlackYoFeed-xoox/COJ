@@ -1,0 +1,430 @@
+{% extends 'log_management/base.html' %}
+
+{% block title %}登录日志{% endblock %}
+
+{% block breadcrumb %}
+<a><cite>登录日志</cite></a>
+{% endblock %}
+
+{% block content %}
+<!-- 搜索表单 -->
+<div class="search-form">
+    <form class="layui-form" lay-filter="searchForm">
+        <div class="layui-row layui-col-space16">
+            <div class="layui-col-md3">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">关键词</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="search" placeholder="搜索用户名或IP地址" class="layui-input">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md2">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">登录状态</label>
+                    <div class="layui-input-block">
+                        <select name="status">
+                            <option value="">全部状态</option>
+                            <option value="SUCCESS">成功</option>
+                            <option value="FAILED">失败</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md2">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">开始日期</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="start_date" class="layui-input date-picker" placeholder="开始日期">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md2">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">结束日期</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="end_date" class="layui-input date-picker" placeholder="结束日期">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md3">
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button type="submit" class="layui-btn" lay-submit lay-filter="search">
+                            <i class="layui-icon layui-icon-search"></i> 搜索
+                        </button>
+                        <button type="reset" class="layui-btn layui-btn-primary">
+                            <i class="layui-icon layui-icon-refresh"></i> 重置
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- 统计卡片 -->
+<div class="layui-row layui-col-space16" style="margin-bottom: 20px;">
+    <div class="layui-col-md3">
+        <div class="log-card">
+            <div class="log-card-body">
+                <div class="stat-item">
+                    <div class="stat-icon" style="background: #1E9FFF;">
+                        <i class="layui-icon layui-icon-user"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="todayLogins">0</div>
+                        <div class="stat-label">今日登录</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md3">
+        <div class="log-card">
+            <div class="log-card-body">
+                <div class="stat-item">
+                    <div class="stat-icon" style="background: #FF5722;">
+                        <i class="layui-icon layui-icon-close"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="todayFailures">0</div>
+                        <div class="stat-label">今日失败</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md3">
+        <div class="log-card">
+            <div class="log-card-body">
+                <div class="stat-item">
+                    <div class="stat-icon" style="background: #009688;">
+                        <i class="layui-icon layui-icon-group"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="uniqueUsers">0</div>
+                        <div class="stat-label">独立用户</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md3">
+        <div class="log-card">
+            <div class="log-card-body">
+                <div class="stat-item">
+                    <div class="stat-icon" style="background: #FFB800;">
+                        <i class="layui-icon layui-icon-location"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="uniqueIps">0</div>
+                        <div class="stat-label">独立IP</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 工具栏 -->
+<div class="toolbar">
+    <div class="btn-group">
+        <button class="layui-btn layui-btn-sm" id="refreshBtn">
+            <i class="layui-icon layui-icon-refresh"></i> 刷新
+        </button>
+        <button class="layui-btn layui-btn-sm layui-btn-danger" id="clearBtn">
+            <i class="layui-icon layui-icon-delete"></i> 清理日志
+        </button>
+        <button class="layui-btn layui-btn-sm layui-btn-normal" id="exportBtn">
+            <i class="layui-icon layui-icon-export"></i> 导出
+        </button>
+        <button class="layui-btn layui-btn-sm layui-btn-warm" id="statsBtn">
+            <i class="layui-icon layui-icon-chart"></i> 统计分析
+        </button>
+    </div>
+    <div>
+        <span id="totalCount">总计：0 条记录</span>
+    </div>
+</div>
+
+<!-- 数据表格 -->
+<div class="log-card">
+    <div class="log-card-body" style="padding: 0;">
+        <table class="layui-hide" id="loginLogTable" lay-filter="loginLogTable"></table>
+    </div>
+</div>
+
+<!-- 操作列模板 -->
+<script type="text/html" id="actionBar">
+    <a class="layui-btn layui-btn-xs" lay-event="detail">查看详情</a>
+    {{# if(d.status === 'FAILED') { }}
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="block">封禁IP</a>
+    {{# } }}
+</script>
+
+<!-- 登录状态模板 -->
+<script type="text/html" id="statusTpl">
+    {{# if(d.status === 'SUCCESS') { }}
+        <span class="layui-badge layui-bg-green">成功</span>
+    {{# } else { }}
+        <span class="layui-badge layui-bg-red">失败</span>
+    {{# } }}
+</script>
+
+<!-- 用户代理模板 -->
+<script type="text/html" id="userAgentTpl">
+    <span title="{{ d.user_agent }}">
+        {{# if(d.user_agent && d.user_agent.indexOf('Chrome') > -1) { }}
+            <i class="layui-icon layui-icon-chrome" style="color: #4285f4;"></i> Chrome
+        {{# } else if(d.user_agent && d.user_agent.indexOf('Firefox') > -1) { }}
+            <i class="layui-icon layui-icon-firefox" style="color: #ff9500;"></i> Firefox
+        {{# } else if(d.user_agent && d.user_agent.indexOf('Safari') > -1) { }}
+            <i class="layui-icon layui-icon-safari" style="color: #1d7cf2;"></i> Safari
+        {{# } else if(d.user_agent && d.user_agent.indexOf('Edge') > -1) { }}
+            <i class="layui-icon layui-icon-edge" style="color: #0078d4;"></i> Edge
+        {{# } else { }}
+            <i class="layui-icon layui-icon-browser"></i> 其他
+        {{# } }}
+    </span>
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // 加载统计数据
+    loadStats();
+
+    // 初始化表格
+    var tableIns = table.render({
+        elem: '#loginLogTable',
+        url: '{% url "log_management:login_logs_data" %}',
+        defaultToolbar: ['filter', 'exports', 'print'],
+        cols: [[
+            {field: 'id', title: 'ID', width: 80, sort: true},
+            {field: 'user', title: '用户', width: 120},
+            {field: 'user_ip', title: 'IP地址', width: 140},
+            {field: 'location', title: '地理位置', width: 150},
+            {field: 'user_agent', title: '浏览器', width: 120, templet: '#userAgentTpl'},
+            {field: 'status', title: '状态', width: 80, templet: '#statusTpl'},
+            {field: 'failure_reason', title: '失败原因', width: 150},
+            {field: 'login_time', title: '登录时间', width: 160, sort: true},
+            {field: 'logout_time', title: '登出时间', width: 160},
+            {title: '操作', width: 140, toolbar: '#actionBar', fixed: 'right'}
+        ]],
+        page: true,
+        limit: 20,
+        limits: [10, 20, 50, 100],
+        loading: true,
+        done: function(res) {
+            $('#totalCount').text('总计：' + res.count + ' 条记录');
+        }
+    });
+
+    // 搜索表单提交
+    form.on('submit(search)', function(data) {
+        tableIns.reload({
+            where: data.field,
+            page: {curr: 1}
+        });
+        return false;
+    });
+
+    // 行工具事件
+    table.on('tool(loginLogTable)', function(obj) {
+        var data = obj.data;
+        switch(obj.event) {
+            case 'detail':
+                showLoginDetail(data);
+                break;
+            case 'block':
+                blockIp(data.user_ip);
+                break;
+        }
+    });
+
+    // 刷新按钮
+    $('#refreshBtn').click(function() {
+        tableIns.reload();
+        loadStats();
+    });
+
+    // 清理按钮
+    $('#clearBtn').click(function() {
+        showClearDialog();
+    });
+
+    // 导出按钮
+    $('#exportBtn').click(function() {
+        showSuccess('导出功能开发中...');
+    });
+
+    // 统计分析按钮
+    $('#statsBtn').click(function() {
+        showStatsDialog();
+    });
+
+    // 加载统计数据
+    function loadStats() {
+        $.get('{% url "log_management:login_stats" %}', function(res) {
+            if (res.code === 0) {
+                $('#todayLogins').text(res.data.today_logins);
+                $('#todayFailures').text(res.data.today_failures);
+                $('#uniqueUsers').text(res.data.unique_users);
+                $('#uniqueIps').text(res.data.unique_ips);
+            }
+        });
+    }
+
+    // 显示登录详情
+    function showLoginDetail(data) {
+        layer.open({
+            type: 1,
+            title: '登录日志详情',
+            content: `
+                <div style="padding: 20px;">
+                    <table class="layui-table">
+                        <tbody>
+                            <tr><td width="120"><strong>日志ID</strong></td><td>${data.id}</td></tr>
+                            <tr><td><strong>用户</strong></td><td>${data.user}</td></tr>
+                            <tr><td><strong>IP地址</strong></td><td>${data.user_ip}</td></tr>
+                            <tr><td><strong>地理位置</strong></td><td>${data.location || '未知'}</td></tr>
+                            <tr><td><strong>用户代理</strong></td><td style="word-break: break-all;">${data.user_agent || '未知'}</td></tr>
+                            <tr><td><strong>登录状态</strong></td><td>${data.status === 'SUCCESS' ? '成功' : '失败'}</td></tr>
+                            <tr><td><strong>失败原因</strong></td><td>${data.failure_reason || '-'}</td></tr>
+                            <tr><td><strong>登录时间</strong></td><td>${data.login_time}</td></tr>
+                            <tr><td><strong>登出时间</strong></td><td>${data.logout_time || '未登出'}</td></tr>
+                            <tr><td><strong>会话时长</strong></td><td>${data.session_duration || '-'}</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            `,
+            area: ['600px', '500px'],
+            maxmin: true
+        });
+    }
+
+    // 封禁IP
+    function blockIp(ip) {
+        layer.confirm('确定要封禁IP地址 ' + ip + ' 吗？', {
+            icon: 3,
+            title: '确认封禁'
+        }, function(index) {
+            $.post('{% url "log_management:block_ip" %}', {
+                ip: ip,
+                csrfmiddlewaretoken: $('[name=csrfmiddlewaretoken]').val()
+            }, function(res) {
+                if (res.code === 0) {
+                    showSuccess(res.msg);
+                } else {
+                    showError(res.msg);
+                }
+            });
+            layer.close(index);
+        });
+    }
+
+    // 显示清理对话框
+    function showClearDialog() {
+        layer.open({
+            type: 1,
+            title: '清理登录日志',
+            content: `
+                <div style="padding: 20px;">
+                    <form class="layui-form">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">清理范围</label>
+                            <div class="layui-input-block">
+                                <select name="days" lay-verify="required">
+                                    <option value="">请选择</option>
+                                    <option value="7">7天前</option>
+                                    <option value="30">30天前</option>
+                                    <option value="90">90天前</option>
+                                    <option value="365">1年前</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <input type="checkbox" name="only_success" title="仅清理成功登录记录" lay-skin="primary">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button type="submit" class="layui-btn layui-btn-danger" lay-submit lay-filter="clearSubmit">
+                                    确认清理
+                                </button>
+                                <button type="button" class="layui-btn layui-btn-primary" onclick="layer.closeAll()">
+                                    取消
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            `,
+            area: ['400px', '280px'],
+            success: function() {
+                form.render();
+                
+                form.on('submit(clearSubmit)', function(data) {
+                    $.post('{% url "log_management:clear_logs" %}', {
+                        log_type: 'login',
+                        days: data.field.days,
+                        only_success: data.field.only_success ? 'true' : 'false',
+                        csrfmiddlewaretoken: $('[name=csrfmiddlewaretoken]').val()
+                    }, function(res) {
+                        if (res.code === 0) {
+                            showSuccess(res.msg);
+                            tableIns.reload();
+                            loadStats();
+                            layer.closeAll();
+                        } else {
+                            showError(res.msg);
+                        }
+                    });
+                    return false;
+                });
+            }
+        });
+    }
+
+    // 显示统计分析对话框
+    function showStatsDialog() {
+        layer.open({
+            type: 1,
+            title: '登录统计分析',
+            content: `
+                <div style="padding: 20px;">
+                    <div class="layui-tab layui-tab-brief">
+                        <ul class="layui-tab-title">
+                            <li class="layui-this">时间分布</li>
+                            <li>地理分布</li>
+                            <li>浏览器分布</li>
+                        </ul>
+                        <div class="layui-tab-content">
+                            <div class="layui-tab-item layui-show">
+                                <div id="timeChart" style="height: 300px;"></div>
+                            </div>
+                            <div class="layui-tab-item">
+                                <div id="locationChart" style="height: 300px;"></div>
+                            </div>
+                            <div class="layui-tab-item">
+                                <div id="browserChart" style="height: 300px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            area: ['800px', '500px'],
+            maxmin: true,
+            success: function() {
+                element.render('tab');
+                // 这里可以集成图表库如ECharts来显示统计图表
+                showInfo('统计图表功能开发中...');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

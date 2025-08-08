@@ -1,0 +1,280 @@
+{% extends 'log_management/base.html' %}
+
+{% block title %}系统日志管理{% endblock %}
+
+{% block breadcrumb %}
+<a><cite>系统日志</cite></a>
+{% endblock %}
+
+{% block content %}
+<!-- 搜索表单 -->
+<div class="search-form">
+    <form class="layui-form" lay-filter="searchForm">
+        <div class="layui-row layui-col-space16">
+            <div class="layui-col-md3">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">关键词</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="search" placeholder="搜索标题、内容或用户" class="layui-input">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md2">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">日志类型</label>
+                    <div class="layui-input-block">
+                        <select name="log_type">
+                            <option value="">全部类型</option>
+                            <option value="SYSTEM">系统日志</option>
+                            <option value="USER">用户操作</option>
+                            <option value="SECURITY">安全日志</option>
+                            <option value="DATABASE">数据库操作</option>
+                            <option value="API">API调用</option>
+                            <option value="ERROR">错误日志</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md2">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">日志级别</label>
+                    <div class="layui-input-block">
+                        <select name="level">
+                            <option value="">全部级别</option>
+                            <option value="DEBUG">Debug</option>
+                            <option value="INFO">Info</option>
+                            <option value="WARNING">Warning</option>
+                            <option value="ERROR">Error</option>
+                            <option value="CRITICAL">Critical</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md2">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">开始日期</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="start_date" class="layui-input date-picker" placeholder="开始日期">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md2">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">结束日期</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="end_date" class="layui-input date-picker" placeholder="结束日期">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md1">
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button type="submit" class="layui-btn layui-btn-fluid" lay-submit lay-filter="search">
+                            <i class="layui-icon layui-icon-search"></i> 搜索
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- 工具栏 -->
+<div class="toolbar">
+    <div class="btn-group">
+        <button class="layui-btn layui-btn-sm" id="refreshBtn">
+            <i class="layui-icon layui-icon-refresh"></i> 刷新
+        </button>
+        <button class="layui-btn layui-btn-sm layui-btn-danger" id="clearBtn">
+            <i class="layui-icon layui-icon-delete"></i> 清理日志
+        </button>
+    </div>
+    <div>
+        <span id="totalCount">总计：0 条记录</span>
+    </div>
+</div>
+
+<!-- 数据表格 -->
+<div class="log-card">
+    <div class="log-card-body" style="padding: 0;">
+        <table class="layui-hide" id="systemLogTable" lay-filter="systemLogTable"></table>
+    </div>
+</div>
+
+<!-- 表格工具栏模板 -->
+<script type="text/html" id="tableToolbar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="refresh">刷新</button>
+        <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="clear">清理日志</button>
+    </div>
+</script>
+
+<!-- 操作列模板 -->
+<script type="text/html" id="actionBar">
+    <a class="layui-btn layui-btn-xs" lay-event="detail">查看详情</a>
+</script>
+
+<!-- 日志级别模板 -->
+<script type="text/html" id="levelTpl">
+    {{# if(d.level === 'DEBUG') { }}
+        <span class="layui-badge layui-bg-gray">{{ d.level }}</span>
+    {{# } else if(d.level === 'INFO') { }}
+        <span class="layui-badge layui-bg-blue">{{ d.level }}</span>
+    {{# } else if(d.level === 'WARNING') { }}
+        <span class="layui-badge layui-bg-orange">{{ d.level }}</span>
+    {{# } else if(d.level === 'ERROR') { }}
+        <span class="layui-badge layui-bg-red">{{ d.level }}</span>
+    {{# } else if(d.level === 'CRITICAL') { }}
+        <span class="layui-badge layui-bg-black">{{ d.level }}</span>
+    {{# } }}
+</script>
+
+<!-- 响应状态模板 -->
+<script type="text/html" id="statusTpl">
+    {{# if(d.response_status) { }}
+        {{# if(d.response_status >= 200 && d.response_status < 300) { }}
+            <span class="layui-badge layui-bg-green">{{ d.response_status }}</span>
+        {{# } else if(d.response_status >= 300 && d.response_status < 400) { }}
+            <span class="layui-badge layui-bg-blue">{{ d.response_status }}</span>
+        {{# } else if(d.response_status >= 400 && d.response_status < 500) { }}
+            <span class="layui-badge layui-bg-orange">{{ d.response_status }}</span>
+        {{# } else { }}
+            <span class="layui-badge layui-bg-red">{{ d.response_status }}</span>
+        {{# } }}
+    {{# } else { }}
+        <span class="layui-badge layui-bg-gray">-</span>
+    {{# } }}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // 初始化表格
+    var tableIns = table.render({
+        elem: '#systemLogTable',
+        url: '{% url "log_management:system_logs_data" %}',
+        toolbar: '#tableToolbar',
+        defaultToolbar: ['filter', 'exports', 'print'],
+        cols: [[
+            {field: 'id', title: 'ID', width: 80, sort: true},
+            {field: 'log_type', title: '日志类型', width: 120},
+            {field: 'level', title: '级别', width: 100, templet: '#levelTpl'},
+            {field: 'title', title: '标题', width: 200},
+            {field: 'message', title: '内容', width: 300},
+            {field: 'user', title: '用户', width: 120},
+            {field: 'user_ip', title: 'IP地址', width: 140},
+            {field: 'request_method', title: '请求方法', width: 100},
+            {field: 'response_status', title: '状态码', width: 100, templet: '#statusTpl'},
+            {field: 'created_time', title: '创建时间', width: 160, sort: true},
+            {title: '操作', width: 120, toolbar: '#actionBar', fixed: 'right'}
+        ]],
+        page: true,
+        limit: 20,
+        limits: [10, 20, 50, 100],
+        loading: true,
+        done: function(res) {
+            $('#totalCount').text('总计：' + res.count + ' 条记录');
+        }
+    });
+
+    // 搜索表单提交
+    form.on('submit(search)', function(data) {
+        tableIns.reload({
+            where: data.field,
+            page: {curr: 1}
+        });
+        return false;
+    });
+
+    // 工具栏事件
+    table.on('toolbar(systemLogTable)', function(obj) {
+        switch(obj.event) {
+            case 'refresh':
+                tableIns.reload();
+                break;
+            case 'clear':
+                showClearDialog();
+                break;
+        }
+    });
+
+    // 行工具事件
+    table.on('tool(systemLogTable)', function(obj) {
+        var data = obj.data;
+        switch(obj.event) {
+            case 'detail':
+                window.open('{% url "log_management:system_log_detail" 0 %}'.replace('0', data.id));
+                break;
+        }
+    });
+
+    // 刷新按钮
+    $('#refreshBtn').click(function() {
+        tableIns.reload();
+    });
+
+    // 清理按钮
+    $('#clearBtn').click(function() {
+        showClearDialog();
+    });
+
+    // 显示清理对话框
+    function showClearDialog() {
+        layer.open({
+            type: 1,
+            title: '清理系统日志',
+            content: `
+                <div style="padding: 20px;">
+                    <form class="layui-form">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">清理范围</label>
+                            <div class="layui-input-block">
+                                <select name="days" lay-verify="required">
+                                    <option value="">请选择</option>
+                                    <option value="7">7天前</option>
+                                    <option value="30">30天前</option>
+                                    <option value="90">90天前</option>
+                                    <option value="365">1年前</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button type="submit" class="layui-btn layui-btn-danger" lay-submit lay-filter="clearSubmit">
+                                    确认清理
+                                </button>
+                                <button type="button" class="layui-btn layui-btn-primary" onclick="layer.closeAll()">
+                                    取消
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            `,
+            area: ['400px', '250px'],
+            success: function() {
+                form.render();
+                
+                form.on('submit(clearSubmit)', function(data) {
+                    $.post('{% url "log_management:clear_logs" %}', {
+                        log_type: 'system',
+                        days: data.field.days,
+                        csrfmiddlewaretoken: $('[name=csrfmiddlewaretoken]').val()
+                    }, function(res) {
+                        if (res.code === 0) {
+                            showSuccess(res.msg);
+                            tableIns.reload();
+                            layer.closeAll();
+                        } else {
+                            showError(res.msg);
+                        }
+                    });
+                    return false;
+                });
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,340 @@
+{% extends 'log_management/base.html' %}
+
+{% block title %}错误日志{% endblock %}
+
+{% block breadcrumb %}
+<a><cite>错误日志</cite></a>
+{% endblock %}
+
+{% block content %}
+<!-- 搜索表单 -->
+<div class="search-form">
+    <form class="layui-form" lay-filter="searchForm">
+        <div class="layui-row layui-col-space16">
+            <div class="layui-col-md3">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">关键词</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="search" placeholder="搜索错误信息或异常类型" class="layui-input">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md2">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">错误级别</label>
+                    <div class="layui-input-block">
+                        <select name="level">
+                            <option value="">全部级别</option>
+                            <option value="ERROR">错误</option>
+                            <option value="CRITICAL">严重</option>
+                            <option value="WARNING">警告</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md2">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">处理状态</label>
+                    <div class="layui-input-block">
+                        <select name="is_resolved">
+                            <option value="">全部状态</option>
+                            <option value="true">已解决</option>
+                            <option value="false">未解决</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md2">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">开始日期</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="start_date" class="layui-input date-picker" placeholder="开始日期">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md3">
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button type="submit" class="layui-btn" lay-submit lay-filter="search">
+                            <i class="layui-icon layui-icon-search"></i> 搜索
+                        </button>
+                        <button type="reset" class="layui-btn layui-btn-primary">
+                            <i class="layui-icon layui-icon-refresh"></i> 重置
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- 工具栏 -->
+<div class="toolbar">
+    <div class="btn-group">
+        <button class="layui-btn layui-btn-sm" id="refreshBtn">
+            <i class="layui-icon layui-icon-refresh"></i> 刷新
+        </button>
+        <button class="layui-btn layui-btn-sm layui-btn-danger" id="clearBtn">
+            <i class="layui-icon layui-icon-delete"></i> 清理日志
+        </button>
+        <button class="layui-btn layui-btn-sm layui-btn-warm" id="markResolvedBtn">
+            <i class="layui-icon layui-icon-ok"></i> 标记已解决
+        </button>
+    </div>
+    <div>
+        <span id="totalCount">总计：0 条记录</span>
+        <span id="unresolvedCount" style="margin-left: 20px; color: #ff5722;">未解决：0 条</span>
+    </div>
+</div>
+
+<!-- 数据表格 -->
+<div class="log-card">
+    <div class="log-card-body" style="padding: 0;">
+        <table class="layui-hide" id="errorLogTable" lay-filter="errorLogTable"></table>
+    </div>
+</div>
+
+<!-- 操作列模板 -->
+<script type="text/html" id="actionBar">
+    <a class="layui-btn layui-btn-xs" lay-event="detail">查看详情</a>
+    {{# if(!d.is_resolved) { }}
+    <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="resolve">标记解决</a>
+    {{# } }}
+</script>
+
+<!-- 错误级别模板 -->
+<script type="text/html" id="levelTpl">
+    {{# if(d.level === 'CRITICAL') { }}
+        <span class="layui-badge layui-bg-red">严重</span>
+    {{# } else if(d.level === 'ERROR') { }}
+        <span class="layui-badge layui-bg-orange">错误</span>
+    {{# } else if(d.level === 'WARNING') { }}
+        <span class="layui-badge layui-bg-blue">警告</span>
+    {{# } else { }}
+        <span class="layui-badge">{{ d.level }}</span>
+    {{# } }}
+</script>
+
+<!-- 解决状态模板 -->
+<script type="text/html" id="resolvedTpl">
+    {{# if(d.is_resolved) { }}
+        <span class="layui-badge layui-bg-green">已解决</span>
+    {{# } else { }}
+        <span class="layui-badge layui-bg-red">未解决</span>
+    {{# } }}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // 初始化表格
+    var tableIns = table.render({
+        elem: '#errorLogTable',
+        url: '{% url "log_management:error_logs_data" %}',
+        defaultToolbar: ['filter', 'exports', 'print'],
+        cols: [[
+            {type: 'checkbox', width: 50},
+            {field: 'id', title: 'ID', width: 80, sort: true},
+            {field: 'level', title: '错误级别', width: 100, templet: '#levelTpl'},
+            {field: 'exception_type', title: '异常类型', width: 150},
+            {field: 'error_message', title: '错误信息', width: 300},
+            {field: 'user', title: '用户', width: 120},
+            {field: 'user_ip', title: 'IP地址', width: 140},
+            {field: 'request_url', title: '请求URL', width: 200},
+            {field: 'is_resolved', title: '状态', width: 100, templet: '#resolvedTpl'},
+            {field: 'created_at', title: '发生时间', width: 160, sort: true},
+            {title: '操作', width: 160, toolbar: '#actionBar', fixed: 'right'}
+        ]],
+        page: true,
+        limit: 20,
+        limits: [10, 20, 50, 100],
+        loading: true,
+        done: function(res) {
+            $('#totalCount').text('总计：' + res.count + ' 条记录');
+            $('#unresolvedCount').text('未解决：' + (res.unresolved_count || 0) + ' 条');
+        }
+    });
+
+    // 搜索表单提交
+    form.on('submit(search)', function(data) {
+        tableIns.reload({
+            where: data.field,
+            page: {curr: 1}
+        });
+        return false;
+    });
+
+    // 行工具事件
+    table.on('tool(errorLogTable)', function(obj) {
+        var data = obj.data;
+        switch(obj.event) {
+            case 'detail':
+                showErrorDetail(data);
+                break;
+            case 'resolve':
+                markAsResolved([data.id]);
+                break;
+        }
+    });
+
+    // 刷新按钮
+    $('#refreshBtn').click(function() {
+        tableIns.reload();
+    });
+
+    // 清理按钮
+    $('#clearBtn').click(function() {
+        showClearDialog();
+    });
+
+    // 批量标记已解决
+    $('#markResolvedBtn').click(function() {
+        var checkStatus = table.checkStatus('errorLogTable');
+        if (checkStatus.data.length === 0) {
+            showError('请选择要标记的错误日志');
+            return;
+        }
+        var ids = checkStatus.data.map(function(item) {
+            return item.id;
+        });
+        markAsResolved(ids);
+    });
+
+    // 显示错误详情
+    function showErrorDetail(data) {
+        layer.open({
+            type: 1,
+            title: '错误日志详情',
+            content: `
+                <div style="padding: 20px;">
+                    <div class="layui-tab layui-tab-brief">
+                        <ul class="layui-tab-title">
+                            <li class="layui-this">基本信息</li>
+                            <li>错误详情</li>
+                            <li>堆栈跟踪</li>
+                        </ul>
+                        <div class="layui-tab-content">
+                            <div class="layui-tab-item layui-show">
+                                <table class="layui-table">
+                                    <tbody>
+                                        <tr><td width="120"><strong>错误ID</strong></td><td>${data.id}</td></tr>
+                                        <tr><td><strong>错误级别</strong></td><td>${data.level}</td></tr>
+                                        <tr><td><strong>异常类型</strong></td><td>${data.exception_type}</td></tr>
+                                        <tr><td><strong>用户</strong></td><td>${data.user}</td></tr>
+                                        <tr><td><strong>用户IP</strong></td><td>${data.user_ip}</td></tr>
+                                        <tr><td><strong>请求URL</strong></td><td style="word-break: break-all;">${data.request_url}</td></tr>
+                                        <tr><td><strong>请求方法</strong></td><td>${data.request_method}</td></tr>
+                                        <tr><td><strong>处理状态</strong></td><td>${data.is_resolved ? '已解决' : '未解决'}</td></tr>
+                                        <tr><td><strong>发生时间</strong></td><td>${data.created_at}</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="layui-tab-item">
+                                <div style="background: #f5f5f5; padding: 15px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto;">
+${data.error_message}
+                                </div>
+                            </div>
+                            <div class="layui-tab-item">
+                                <div style="background: #f5f5f5; padding: 15px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto;">
+${data.stack_trace || '无堆栈跟踪信息'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            area: ['800px', '600px'],
+            maxmin: true,
+            success: function() {
+                element.render('tab');
+            }
+        });
+    }
+
+    // 标记为已解决
+    function markAsResolved(ids) {
+        layer.confirm('确定要将选中的错误日志标记为已解决吗？', {
+            icon: 3,
+            title: '确认操作'
+        }, function(index) {
+            $.post('{% url "log_management:mark_resolved" %}', {
+                ids: ids.join(','),
+                csrfmiddlewaretoken: $('[name=csrfmiddlewaretoken]').val()
+            }, function(res) {
+                if (res.code === 0) {
+                    showSuccess(res.msg);
+                    tableIns.reload();
+                } else {
+                    showError(res.msg);
+                }
+            });
+            layer.close(index);
+        });
+    }
+
+    // 显示清理对话框
+    function showClearDialog() {
+        layer.open({
+            type: 1,
+            title: '清理错误日志',
+            content: `
+                <div style="padding: 20px;">
+                    <form class="layui-form">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">清理范围</label>
+                            <div class="layui-input-block">
+                                <select name="days" lay-verify="required">
+                                    <option value="">请选择</option>
+                                    <option value="7">7天前</option>
+                                    <option value="30">30天前</option>
+                                    <option value="90">90天前</option>
+                                    <option value="365">1年前</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <input type="checkbox" name="only_resolved" title="仅清理已解决的错误" lay-skin="primary">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button type="submit" class="layui-btn layui-btn-danger" lay-submit lay-filter="clearSubmit">
+                                    确认清理
+                                </button>
+                                <button type="button" class="layui-btn layui-btn-primary" onclick="layer.closeAll()">
+                                    取消
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            `,
+            area: ['400px', '280px'],
+            success: function() {
+                form.render();
+                
+                form.on('submit(clearSubmit)', function(data) {
+                    $.post('{% url "log_management:clear_logs" %}', {
+                        log_type: 'error',
+                        days: data.field.days,
+                        only_resolved: data.field.only_resolved ? 'true' : 'false',
+                        csrfmiddlewaretoken: $('[name=csrfmiddlewaretoken]').val()
+                    }, function(res) {
+                        if (res.code === 0) {
+                            showSuccess(res.msg);
+                            tableIns.reload();
+                            layer.closeAll();
+                        } else {
+                            showError(res.msg);
+                        }
+                    });
+                    return false;
+                });
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

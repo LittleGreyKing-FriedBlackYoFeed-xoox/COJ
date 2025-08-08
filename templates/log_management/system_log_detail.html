@@ -1,0 +1,253 @@
+{% extends 'log_management/base.html' %}
+
+{% block title %}系统日志详情{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'log_management:system_logs' %}">系统日志</a>
+<a><cite>日志详情</cite></a>
+{% endblock %}
+
+{% block content %}
+<div class="log-card">
+    <div class="log-card-header">
+        <i class="layui-icon layui-icon-log"></i> 系统日志详情 #{{ log.id }}
+        <div style="float: right;">
+            <a href="{% url 'log_management:system_logs' %}" class="layui-btn layui-btn-sm layui-btn-primary">
+                <i class="layui-icon layui-icon-return"></i> 返回列表
+            </a>
+        </div>
+    </div>
+    <div class="log-card-body">
+        <div class="layui-row layui-col-space16">
+            <!-- 基本信息 -->
+            <div class="layui-col-md6">
+                <fieldset class="layui-elem-field">
+                    <legend>基本信息</legend>
+                    <div class="layui-field-box">
+                        <table class="layui-table">
+                            <tbody>
+                                <tr>
+                                    <td width="120"><strong>日志ID</strong></td>
+                                    <td>{{ log.id }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>日志类型</strong></td>
+                                    <td>
+                                        <span class="layui-badge layui-bg-blue">{{ log.get_log_type_display }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>日志级别</strong></td>
+                                    <td>
+                                        {% if log.level == 'DEBUG' %}
+                                            <span class="layui-badge layui-bg-gray">{{ log.level }}</span>
+                                        {% elif log.level == 'INFO' %}
+                                            <span class="layui-badge layui-bg-blue">{{ log.level }}</span>
+                                        {% elif log.level == 'WARNING' %}
+                                            <span class="layui-badge layui-bg-orange">{{ log.level }}</span>
+                                        {% elif log.level == 'ERROR' %}
+                                            <span class="layui-badge layui-bg-red">{{ log.level }}</span>
+                                        {% elif log.level == 'CRITICAL' %}
+                                            <span class="layui-badge layui-bg-black">{{ log.level }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>标题</strong></td>
+                                    <td>{{ log.title }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>创建时间</strong></td>
+                                    <td>{{ log.created_time|date:"Y-m-d H:i:s" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>模块名称</strong></td>
+                                    <td>{{ log.module|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>函数名称</strong></td>
+                                    <td>{{ log.function|default:"-" }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </fieldset>
+            </div>
+
+            <!-- 用户信息 -->
+            <div class="layui-col-md6">
+                <fieldset class="layui-elem-field">
+                    <legend>用户信息</legend>
+                    <div class="layui-field-box">
+                        <table class="layui-table">
+                            <tbody>
+                                <tr>
+                                    <td width="120"><strong>操作用户</strong></td>
+                                    <td>{{ log.user.username|default:"系统" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>用户IP</strong></td>
+                                    <td>{{ log.user_ip|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>用户代理</strong></td>
+                                    <td style="word-break: break-all;">{{ log.user_agent|default:"-" }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+
+        <!-- 请求信息 -->
+        {% if log.request_method or log.request_url %}
+        <fieldset class="layui-elem-field" style="margin-top: 20px;">
+            <legend>请求信息</legend>
+            <div class="layui-field-box">
+                <table class="layui-table">
+                    <tbody>
+                        <tr>
+                            <td width="120"><strong>请求方法</strong></td>
+                            <td>
+                                {% if log.request_method %}
+                                    <span class="layui-badge layui-bg-green">{{ log.request_method }}</span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>请求URL</strong></td>
+                            <td style="word-break: break-all;">{{ log.request_url|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>请求参数</strong></td>
+                            <td>
+                                {% if log.request_params %}
+                                    <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; max-height: 200px; overflow-y: auto;">{{ log.request_params }}</pre>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </fieldset>
+        {% endif %}
+
+        <!-- 响应信息 -->
+        {% if log.response_status or log.response_time %}
+        <fieldset class="layui-elem-field" style="margin-top: 20px;">
+            <legend>响应信息</legend>
+            <div class="layui-field-box">
+                <table class="layui-table">
+                    <tbody>
+                        <tr>
+                            <td width="120"><strong>响应状态码</strong></td>
+                            <td>
+                                {% if log.response_status %}
+                                    {% if log.response_status >= 200 and log.response_status < 300 %}
+                                        <span class="layui-badge layui-bg-green">{{ log.response_status }}</span>
+                                    {% elif log.response_status >= 300 and log.response_status < 400 %}
+                                        <span class="layui-badge layui-bg-blue">{{ log.response_status }}</span>
+                                    {% elif log.response_status >= 400 and log.response_status < 500 %}
+                                        <span class="layui-badge layui-bg-orange">{{ log.response_status }}</span>
+                                    {% else %}
+                                        <span class="layui-badge layui-bg-red">{{ log.response_status }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>响应时间</strong></td>
+                            <td>
+                                {% if log.response_time %}
+                                    {{ log.response_time }} ms
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </fieldset>
+        {% endif %}
+
+        <!-- 日志内容 -->
+        <fieldset class="layui-elem-field" style="margin-top: 20px;">
+            <legend>日志内容</legend>
+            <div class="layui-field-box">
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 4px; line-height: 1.6;">
+                    {{ log.message|linebreaks }}
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- 额外数据 -->
+        {% if log.extra_data %}
+        <fieldset class="layui-elem-field" style="margin-top: 20px;">
+            <legend>额外数据</legend>
+            <div class="layui-field-box">
+                <pre style="background: #f5f5f5; padding: 15px; border-radius: 4px; max-height: 300px; overflow-y: auto;">{{ log.extra_data|pprint }}</pre>
+            </div>
+        </fieldset>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 操作按钮 -->
+<div style="text-align: center; margin-top: 20px;">
+    <a href="{% url 'log_management:system_logs' %}" class="layui-btn layui-btn-primary">
+        <i class="layui-icon layui-icon-return"></i> 返回列表
+    </a>
+    <button class="layui-btn" onclick="window.print()">
+        <i class="layui-icon layui-icon-print"></i> 打印
+    </button>
+    <button class="layui-btn layui-btn-normal" onclick="copyToClipboard()">
+        <i class="layui-icon layui-icon-file"></i> 复制内容
+    </button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function copyToClipboard() {
+    var content = `
+日志ID: {{ log.id }}
+日志类型: {{ log.get_log_type_display }}
+日志级别: {{ log.level }}
+标题: {{ log.title }}
+创建时间: {{ log.created_time|date:"Y-m-d H:i:s" }}
+操作用户: {{ log.user.username|default:"系统" }}
+用户IP: {{ log.user_ip|default:"-" }}
+请求方法: {{ log.request_method|default:"-" }}
+请求URL: {{ log.request_url|default:"-" }}
+响应状态码: {{ log.response_status|default:"-" }}
+响应时间: {% if log.response_time %}{{ log.response_time }} ms{% else %}-{% endif %}
+
+日志内容:
+{{ log.message }}
+    `.trim();
+    
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(content).then(function() {
+            showSuccess('内容已复制到剪贴板');
+        });
+    } else {
+        // 兼容旧浏览器
+        var textArea = document.createElement('textarea');
+        textArea.value = content;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showSuccess('内容已复制到剪贴板');
+    }
+}
+</script>
+{% endblock %}

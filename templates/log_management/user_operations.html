@@ -1,0 +1,284 @@
+{% extends 'log_management/base.html' %}
+
+{% block title %}用户操作日志{% endblock %}
+
+{% block breadcrumb %}
+<a><cite>用户操作日志</cite></a>
+{% endblock %}
+
+{% block content %}
+<!-- 搜索表单 -->
+<div class="search-form">
+    <form class="layui-form" lay-filter="searchForm">
+        <div class="layui-row layui-col-space16">
+            <div class="layui-col-md3">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">关键词</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="search" placeholder="搜索用户名、操作描述或目标" class="layui-input">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md2">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">操作类型</label>
+                    <div class="layui-input-block">
+                        <select name="operation">
+                            <option value="">全部操作</option>
+                            <option value="LOGIN">登录</option>
+                            <option value="LOGOUT">登出</option>
+                            <option value="CREATE">创建</option>
+                            <option value="UPDATE">更新</option>
+                            <option value="DELETE">删除</option>
+                            <option value="VIEW">查看</option>
+                            <option value="DOWNLOAD">下载</option>
+                            <option value="UPLOAD">上传</option>
+                            <option value="SUBMIT">提交</option>
+                            <option value="APPROVE">审批</option>
+                            <option value="REJECT">拒绝</option>
+                            <option value="OTHER">其他</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md2">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">开始日期</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="start_date" class="layui-input date-picker" placeholder="开始日期">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md2">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">结束日期</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="end_date" class="layui-input date-picker" placeholder="结束日期">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md3">
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button type="submit" class="layui-btn" lay-submit lay-filter="search">
+                            <i class="layui-icon layui-icon-search"></i> 搜索
+                        </button>
+                        <button type="reset" class="layui-btn layui-btn-primary">
+                            <i class="layui-icon layui-icon-refresh"></i> 重置
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- 工具栏 -->
+<div class="toolbar">
+    <div class="btn-group">
+        <button class="layui-btn layui-btn-sm" id="refreshBtn">
+            <i class="layui-icon layui-icon-refresh"></i> 刷新
+        </button>
+        <button class="layui-btn layui-btn-sm layui-btn-danger" id="clearBtn">
+            <i class="layui-icon layui-icon-delete"></i> 清理日志
+        </button>
+        <button class="layui-btn layui-btn-sm layui-btn-normal" id="exportBtn">
+            <i class="layui-icon layui-icon-export"></i> 导出
+        </button>
+    </div>
+    <div>
+        <span id="totalCount">总计：0 条记录</span>
+    </div>
+</div>
+
+<!-- 数据表格 -->
+<div class="log-card">
+    <div class="log-card-body" style="padding: 0;">
+        <table class="layui-hide" id="operationLogTable" lay-filter="operationLogTable"></table>
+    </div>
+</div>
+
+<!-- 操作列模板 -->
+<script type="text/html" id="actionBar">
+    <a class="layui-btn layui-btn-xs" lay-event="detail">查看详情</a>
+</script>
+
+<!-- 操作类型模板 -->
+<script type="text/html" id="operationTpl">
+    {{# if(d.operation === '登录') { }}
+        <span class="layui-badge layui-bg-green">{{ d.operation }}</span>
+    {{# } else if(d.operation === '登出') { }}
+        <span class="layui-badge layui-bg-gray">{{ d.operation }}</span>
+    {{# } else if(d.operation === '创建') { }}
+        <span class="layui-badge layui-bg-blue">{{ d.operation }}</span>
+    {{# } else if(d.operation === '更新') { }}
+        <span class="layui-badge layui-bg-orange">{{ d.operation }}</span>
+    {{# } else if(d.operation === '删除') { }}
+        <span class="layui-badge layui-bg-red">{{ d.operation }}</span>
+    {{# } else { }}
+        <span class="layui-badge">{{ d.operation }}</span>
+    {{# } }}
+</script>
+
+<!-- 成功状态模板 -->
+<script type="text/html" id="successTpl">
+    {{# if(d.is_success === '成功') { }}
+        <span class="layui-badge layui-bg-green">成功</span>
+    {{# } else { }}
+        <span class="layui-badge layui-bg-red">失败</span>
+    {{# } }}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // 初始化表格
+    var tableIns = table.render({
+        elem: '#operationLogTable',
+        url: '{% url "log_management:user_operations_data" %}',
+        defaultToolbar: ['filter', 'exports', 'print'],
+        cols: [[
+            {field: 'id', title: 'ID', width: 80, sort: true},
+            {field: 'user', title: '用户', width: 120},
+            {field: 'operation', title: '操作类型', width: 120, templet: '#operationTpl'},
+            {field: 'operation_desc', title: '操作描述', width: 200},
+            {field: 'target_model', title: '目标模型', width: 120},
+            {field: 'target_id', title: '目标ID', width: 100},
+            {field: 'user_ip', title: 'IP地址', width: 140},
+            {field: 'request_method', title: '请求方法', width: 100},
+            {field: 'is_success', title: '状态', width: 80, templet: '#successTpl'},
+            {field: 'operation_time', title: '操作时间', width: 160, sort: true},
+            {title: '操作', width: 120, toolbar: '#actionBar', fixed: 'right'}
+        ]],
+        page: true,
+        limit: 20,
+        limits: [10, 20, 50, 100],
+        loading: true,
+        done: function(res) {
+            $('#totalCount').text('总计：' + res.count + ' 条记录');
+        }
+    });
+
+    // 搜索表单提交
+    form.on('submit(search)', function(data) {
+        tableIns.reload({
+            where: data.field,
+            page: {curr: 1}
+        });
+        return false;
+    });
+
+    // 行工具事件
+    table.on('tool(operationLogTable)', function(obj) {
+        var data = obj.data;
+        switch(obj.event) {
+            case 'detail':
+                showOperationDetail(data);
+                break;
+        }
+    });
+
+    // 刷新按钮
+    $('#refreshBtn').click(function() {
+        tableIns.reload();
+    });
+
+    // 清理按钮
+    $('#clearBtn').click(function() {
+        showClearDialog();
+    });
+
+    // 导出按钮
+    $('#exportBtn').click(function() {
+        showSuccess('导出功能开发中...');
+    });
+
+    // 显示操作详情
+    function showOperationDetail(data) {
+        layer.open({
+            type: 1,
+            title: '用户操作详情',
+            content: `
+                <div style="padding: 20px;">
+                    <table class="layui-table">
+                        <tbody>
+                            <tr><td width="120"><strong>操作ID</strong></td><td>${data.id}</td></tr>
+                            <tr><td><strong>用户</strong></td><td>${data.user}</td></tr>
+                            <tr><td><strong>操作类型</strong></td><td>${data.operation}</td></tr>
+                            <tr><td><strong>操作描述</strong></td><td>${data.operation_desc}</td></tr>
+                            <tr><td><strong>目标模型</strong></td><td>${data.target_model}</td></tr>
+                            <tr><td><strong>目标ID</strong></td><td>${data.target_id}</td></tr>
+                            <tr><td><strong>用户IP</strong></td><td>${data.user_ip}</td></tr>
+                            <tr><td><strong>请求方法</strong></td><td>${data.request_method}</td></tr>
+                            <tr><td><strong>请求URL</strong></td><td style="word-break: break-all;">${data.request_url}</td></tr>
+                            <tr><td><strong>操作状态</strong></td><td>${data.is_success}</td></tr>
+                            <tr><td><strong>操作时间</strong></td><td>${data.operation_time}</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            `,
+            area: ['600px', '500px'],
+            maxmin: true
+        });
+    }
+
+    // 显示清理对话框
+    function showClearDialog() {
+        layer.open({
+            type: 1,
+            title: '清理用户操作日志',
+            content: `
+                <div style="padding: 20px;">
+                    <form class="layui-form">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">清理范围</label>
+                            <div class="layui-input-block">
+                                <select name="days" lay-verify="required">
+                                    <option value="">请选择</option>
+                                    <option value="7">7天前</option>
+                                    <option value="30">30天前</option>
+                                    <option value="90">90天前</option>
+                                    <option value="365">1年前</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button type="submit" class="layui-btn layui-btn-danger" lay-submit lay-filter="clearSubmit">
+                                    确认清理
+                                </button>
+                                <button type="button" class="layui-btn layui-btn-primary" onclick="layer.closeAll()">
+                                    取消
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            `,
+            area: ['400px', '250px'],
+            success: function() {
+                form.render();
+                
+                form.on('submit(clearSubmit)', function(data) {
+                    $.post('{% url "log_management:clear_logs" %}', {
+                        log_type: 'operation',
+                        days: data.field.days,
+                        csrfmiddlewaretoken: $('[name=csrfmiddlewaretoken]').val()
+                    }, function(res) {
+                        if (res.code === 0) {
+                            showSuccess(res.msg);
+                            tableIns.reload();
+                            layer.closeAll();
+                        } else {
+                            showError(res.msg);
+                        }
+                    });
+                    return false;
+                });
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
