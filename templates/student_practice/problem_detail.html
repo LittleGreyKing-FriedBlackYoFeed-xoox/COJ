@@ -575,6 +575,7 @@
                                     <div class="layui-form-item">
                                         <div class="layui-input-block">
                                             <button type="button" class="layui-btn" id="submitBtn">Submit Code</button>
+                        <button type="button" class="layui-btn layui-btn-warm" id="requestReviewBtn">Request Manual Review</button>
                                             <button type="reset" class="layui-btn layui-btn-primary">Reset</button>
                                         </div>
                                     </div>
@@ -1176,8 +1177,54 @@
                     tableBody.append(row);
                 });
             }
+});
+            
+            // Request manual review
+            $('#requestReviewBtn').on('click', function() {
+                var code = editor.getValue();
+                if (!code.trim()) {
+                    layer.msg('Please write some code before requesting review', {icon: 0});
+                    return;
+                }
+                
+                layer.confirm('Are you sure you want to request manual review from teacher?', {
+                    btn: ['Yes', 'Cancel'],
+                    icon: 3,
+                    title: 'Request Manual Review'
+                }, function(index) {
+                    var loadingIndex = layer.msg('Submitting review request...', {
+                        icon: 16,
+                        shade: 0.3,
+                        time: 0
+                    });
+                    
+                    $.ajax({
+                        url: '{% url "manual_review:request_manual_review" problem.id %}',
+                        type: 'POST',
+                        data: {
+                            'code': code,
+                            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+                        },
+                        success: function(response) {
+                            layer.close(loadingIndex);
+                            if (response.success) {
+                                layer.msg('Review request submitted successfully! Teacher will review your code soon.', {
+                                    icon: 1,
+                                    time: 3000
+                                });
+                            } else {
+                                layer.msg('Failed to submit review request: ' + (response.error || 'Unknown error'), {icon: 2});
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            layer.close(loadingIndex);
+                            layer.msg('Network error, please try again later', {icon: 2});
+                        }
+                    });
+                    layer.close(index);
+                });
+            });
         });
     </script>
 </body>
-
 </html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Manual Review List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="https://unpkg.com/layui@2.8.18/dist/css/layui.css">
+    <style>
+        .code-preview {
+            max-width: 300px;
+            max-height: 100px;
+            overflow: hidden;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            background: #f5f5f5;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .filter-bar {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="layui-container" style="margin-top: 20px;">
+        <div class="layui-row">
+            <div class="layui-col-md12">
+                <div class="layui-card">
+                    <div class="layui-card-header">
+                        <h2>Manual Review Requests</h2>
+                    </div>
+                    <div class="layui-card-body">
+                        <!-- 状态过滤器 -->
+                        <div class="filter-bar">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">Status Filter:</label>
+                                <div class="layui-input-inline">
+                                    <select id="statusFilter" lay-filter="statusFilter">
+                                        <option value="all" {% if current_status == 'all' %}selected{% endif %}>All</option>
+                                        <option value="pending" {% if current_status == 'pending' %}selected{% endif %}>Pending</option>
+                                        <option value="reviewed" {% if current_status == 'reviewed' %}selected{% endif %}>Reviewed</option>
+                                        <option value="rejected" {% if current_status == 'rejected' %}selected{% endif %}>Rejected</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if reviews %}
+                        <table class="layui-table" lay-filter="reviewTable">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Problem</th>
+                                    <th>Code Preview</th>
+                                    <th>Submit Time</th>
+                                    <th>Status</th>
+                                    <th>Teacher</th>
+                                    <th>Review Time</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for review in reviews %}
+                                <tr>
+                                    <td>{{ review.student.username }}</td>
+                                    <td>{{ review.problem.title }}</td>
+                                    <td>
+                                        <div class="code-preview">{{ review.submitted_code|truncatechars:100 }}</div>
+                                    </td>
+                                    <td>{{ review.request_time|date:"Y-m-d H:i" }}</td>
+                                    <td>
+                                        <span class="layui-badge 
+                                            {% if review.status == 'pending' %}layui-bg-orange
+                                            {% elif review.status == 'reviewed' %}layui-bg-green
+                                            {% elif review.status == 'rejected' %}layui-bg-red
+                                            {% endif %}">
+                                            {{ review.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ review.teacher.username|default:"-" }}</td>
+                                    <td>{{ review.review_time|date:"Y-m-d H:i"|default:"-" }}</td>
+                                    <td>
+                                        {% if review.status == 'pending' %}
+                                        <button class="layui-btn layui-btn-sm" onclick="reviewDetail({{ review.id }})">
+                                            Review
+                                        </button>
+                                        {% else %}
+                                        <button class="layui-btn layui-btn-sm layui-btn-normal" onclick="reviewDetail({{ review.id }})">
+                                            View
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                        <!-- 分页 -->
+                        {% if reviews.has_other_pages %}
+                        <div id="pagination"></div>
+                        {% endif %}
+                        {% else %}
+                        <div class="layui-empty">
+                            <div class="layui-empty-icon">
+                                <i class="layui-icon layui-icon-survey"></i>
+                            </div>
+                            <p class="layui-empty-text">No review requests found</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/layui@2.8.18/dist/layui.js"></script>
+    <script>
+        layui.use(['form', 'laypage'], function(){
+            var form = layui.form;
+            var laypage = layui.laypage;
+
+            // 状态过滤器变化事件
+            form.on('select(statusFilter)', function(data){
+                var status = data.value;
+                var url = new URL(window.location);
+                url.searchParams.set('status', status);
+                url.searchParams.delete('page'); // 重置页码
+                window.location.href = url.toString();
+            });
+
+            // 分页
+            {% if reviews.has_other_pages %}
+            laypage.render({
+                elem: 'pagination',
+                count: {{ reviews.paginator.count }},
+                limit: {{ reviews.paginator.per_page }},
+                curr: {{ reviews.number }},
+                jump: function(obj, first){
+                    if(!first){
+                        var url = new URL(window.location);
+                        url.searchParams.set('page', obj.curr);
+                        window.location.href = url.toString();
+                    }
+                }
+            });
+            {% endif %}
+        });
+
+        function reviewDetail(reviewId) {
+            window.location.href = '/manual_review/review/' + reviewId + '/';
+        }
+    </script>
+</body>
+</html>

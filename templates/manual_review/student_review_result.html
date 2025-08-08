@@ -1,0 +1,243 @@
+{% extends 'permission_system/base.html' %}
+{% load static %}
+
+{% block title %}Review Result - Manual Review System{% endblock %}
+
+{% block content %}
+<div class="layui-container" style="margin-top: 20px;">
+    <div class="layui-row">
+        <div class="layui-col-md12">
+            <!-- 面包屑导航 -->
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <span class="layui-breadcrumb">
+                        <a href="{% url 'student_practice:problem_detail' review.problem.id %}">Problem Detail</a>
+                        <a><cite>Review Result</cite></a>
+                    </span>
+                </div>
+            </div>
+            
+            <!-- 复核结果卡片 -->
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    <h2><i class="layui-icon layui-icon-ok-circle"></i> Manual Review Result</h2>
+                </div>
+                <div class="layui-card-body">
+                    <!-- 基本信息 -->
+                    <div class="layui-row layui-col-space15">
+                        <div class="layui-col-md12">
+                            <div class="layui-card">
+                                <div class="layui-card-header">
+                                    <h3>Review Information</h3>
+                                </div>
+                                <div class="layui-card-body">
+                                    <div class="layui-form">
+                                        <div class="layui-row">
+                                            <div class="layui-col-md6">
+                                                <div class="layui-form-item">
+                                                    <label class="layui-form-label">Problem:</label>
+                                                    <div class="layui-input-block">
+                                                        <div class="layui-form-mid layui-word-aux">{{ review.problem.title }}</div>
+                                                    </div>
+                                                </div>
+                                                <div class="layui-form-item">
+                                                    <label class="layui-form-label">Teacher:</label>
+                                                    <div class="layui-input-block">
+                                                        <div class="layui-form-mid layui-word-aux">
+                                                            {% if review.teacher %}
+                                                                {{ review.teacher.username }}
+                                                            {% else %}
+                                                                Not assigned
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="layui-col-md6">
+                                                <div class="layui-form-item">
+                                                    <label class="layui-form-label">Status:</label>
+                                                    <div class="layui-input-block">
+                                                        {% if review.status == 'pending' %}
+                                                            <span class="layui-badge layui-bg-orange">Pending Review</span>
+                                                        {% elif review.status == 'reviewed' %}
+                                                            <span class="layui-badge layui-bg-green">Reviewed</span>
+                                                        {% elif review.status == 'rejected' %}
+                                                            <span class="layui-badge layui-bg-red">Rejected</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                <div class="layui-form-item">
+                                                    <label class="layui-form-label">Reviewed At:</label>
+                                                    <div class="layui-input-block">
+                                                        <div class="layui-form-mid layui-word-aux">
+                                                            {% if review.review_time %}
+                                                                {{ review.review_time|date:"Y-m-d H:i:s" }}
+                                                            {% else %}
+                                                                Not reviewed yet
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if review.status == 'reviewed' %}
+                    <!-- 复核内容 -->
+                    <div class="layui-row layui-col-space15">
+                        <!-- 原始代码 -->
+                        <div class="layui-col-md6">
+                            <div class="layui-card">
+                                <div class="layui-card-header">
+                                    <h3>Your Original Code</h3>
+                                </div>
+                                <div class="layui-card-body">
+                                    <fieldset class="layui-elem-field">
+                                        <div class="layui-field-box">
+                                            <pre style="background: #f8f8f8; padding: 15px; border-radius: 4px; max-height: 400px; overflow-y: auto;"><code>{{ review.code }}</code></pre>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 修正后的代码 -->
+                        <div class="layui-col-md6">
+                            <div class="layui-card">
+                                <div class="layui-card-header">
+                                    <h3>Teacher's Annotated Code</h3>
+                                </div>
+                                <div class="layui-card-body">
+                                    {% if review.annotated_code %}
+                                    <fieldset class="layui-elem-field">
+                                        <div class="layui-field-box">
+                                            <pre style="background: #e8f5e8; padding: 15px; border-radius: 4px; max-height: 400px; overflow-y: auto;"><code>{{ review.annotated_code }}</code></pre>
+                                        </div>
+                                    </fieldset>
+                                    <div style="margin-top: 10px;">
+                                        <button class="layui-btn layui-btn-xs layui-btn-normal" id="copyAnnotatedCode">
+                                            <i class="layui-icon layui-icon-file"></i> Copy Code
+                                        </button>
+                                    </div>
+                                    {% else %}
+                                    <div class="layui-empty">
+                                        <p class="layui-empty-text">No annotated code provided</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 教师评论 -->
+                    <div class="layui-row">
+                        <div class="layui-col-md12">
+                            <div class="layui-card">
+                                <div class="layui-card-header">
+                                    <h3>Teacher's Feedback</h3>
+                                </div>
+                                <div class="layui-card-body">
+                                    {% if review.review_comment %}
+                                    <div class="layui-elem-quote">
+                                        <div style="white-space: pre-wrap; line-height: 1.6;">{{ review.review_comment }}</div>
+                                    </div>
+                                    {% else %}
+                                    <div class="layui-empty">
+                                        <p class="layui-empty-text">No feedback provided</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% elif review.status == 'rejected' %}
+                    <div class="layui-row">
+                        <div class="layui-col-md12">
+                            <div class="layui-card">
+                                <div class="layui-card-body">
+                                    <div class="layui-empty">
+                                        <div class="layui-empty-icon">
+                                            <i class="layui-icon layui-icon-close" style="font-size: 60px; color: #ff5722;"></i>
+                                        </div>
+                                        <p class="layui-empty-text">Review Request Rejected</p>
+                                        <div class="layui-empty-tips">
+                                            Your review request has been rejected. Please check your code and try again.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="layui-row">
+                        <div class="layui-col-md12">
+                            <div class="layui-card">
+                                <div class="layui-card-body">
+                                    <div class="layui-empty">
+                                        <div class="layui-empty-icon">
+                                            <i class="layui-icon layui-icon-time" style="font-size: 60px; color: #ffb800;"></i>
+                                        </div>
+                                        <p class="layui-empty-text">Review Pending</p>
+                                        <div class="layui-empty-tips">
+                                            Your review request is pending. Please wait for teacher to review your code.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- 操作按钮 -->
+                    <div class="layui-row">
+                        <div class="layui-col-md12">
+                            <div class="layui-card">
+                                <div class="layui-card-body" style="text-align: center;">
+                                    <a href="{% url 'student_practice:problem_detail' review.problem.id %}#submit" class="layui-btn layui-btn-normal">
+                                        <i class="layui-icon layui-icon-edit"></i> Back to Problem
+                                    </a>
+                                    {% if review.status == 'reviewed' and review.annotated_code %}
+                                    <a href="{% url 'student_practice:problem_detail' review.problem.id %}#submit" class="layui-btn layui-btn-warm">
+                                        <i class="layui-icon layui-icon-refresh"></i> Try Again with Corrections
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+layui.use(['layer'], function(){
+    var layer = layui.layer;
+    
+    // 复制注释代码功能
+    $('#copyAnnotatedCode').on('click', function() {
+        var annotatedCode = `{{ review.annotated_code|escapejs }}`;
+        
+        // 创建临时文本区域
+        var textArea = document.createElement("textarea");
+        textArea.value = annotatedCode;
+        document.body.appendChild(textArea);
+        textArea.select();
+        
+        try {
+            document.execCommand('copy');
+            layer.msg('Code copied to clipboard!', {icon: 1});
+        } catch (err) {
+            layer.msg('Failed to copy code', {icon: 2});
+        }
+        
+        document.body.removeChild(textArea);
+    });
+});
+</script>
+{% endblock %}

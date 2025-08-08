@@ -32,4 +32,6 @@ urlpatterns = [
     
     # 组织竞赛相关URL
     path("teacher/competitions/", include("urls.organize_competitions_urls")),
+    # 人工复核系统URL
+    path("manual_review/", include(("urls.manual_review_urls", "manual_review"), namespace="manual_review")),
 ]
