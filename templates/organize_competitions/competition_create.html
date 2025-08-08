@@ -1,0 +1,48 @@
+{% extends 'cojHtml/base.html' %}
+{% block content %}
+<div class="layui-container">
+  <h2 class="layui-font-20" style="margin:20px 0;">新建竞赛/组卷</h2>
+  <form class="layui-form" method="post" lay-filter="competition-create">
+    {% csrf_token %}
+    <div class="layui-form-item">
+      <label class="layui-form-label">竞赛名称</label>
+      <div class="layui-input-block">
+        <input type="text" name="name" required lay-verify="required" placeholder="请输入竞赛名称" class="layui-input" autocomplete="off">
+      </div>
+    </div>
+    <div class="layui-form-item">
+      <label class="layui-form-label">描述</label>
+      <div class="layui-input-block">
+        <textarea name="description" placeholder="竞赛描述" class="layui-textarea" autocomplete="off"></textarea>
+      </div>
+    </div>
+    <div class="layui-form-item">
+      <label class="layui-form-label">选择题目</label>
+      <div class="layui-input-block">
+        {% for problem in problems %}
+        <input type="checkbox" name="problems" value="{{ problem.id }}" title="{{ problem.title }}" lay-skin="primary">
+        {% endfor %}
+      </div>
+    </div>
+    <div class="layui-form-item">
+      <label class="layui-form-label">分配用户</label>
+      <div class="layui-input-block">
+        {% for user in users %}
+        <input type="checkbox" name="users" value="{{ user.id }}" title="{{ user.username }}" lay-skin="primary">
+        {% endfor %}
+      </div>
+    </div>
+    <div class="layui-form-item">
+      <div class="layui-input-block">
+        <button class="layui-btn layui-btn-normal" lay-submit lay-filter="create">创建竞赛并组卷</button>
+      </div>
+    </div>
+  </form>
+</div>
+<script>
+layui.use(['form'], function(){
+  var form = layui.form;
+  form.render();
+});
+</script>
+{% endblock %}

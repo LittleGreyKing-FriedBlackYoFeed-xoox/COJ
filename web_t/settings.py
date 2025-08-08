@@ -29,6 +29,7 @@ ALLOWED_HOSTS = ["*"]
 
 # app名(文件夹)和模型名(类名)，但是默认为models.py
 # AUTH_USER_MODEL = 'own_models.User' # 权限认证模型
+AUTH_USER_MODEL = 'own_models.CustomUser'
 # Application definition
 # INSTALLED_APPS += ("doj",) # package
 INSTALLED_APPS = [

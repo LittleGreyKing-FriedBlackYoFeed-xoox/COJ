@@ -1,6 +1,7 @@
 # _*_ coding:utf-8 _*_
 from __future__ import unicode_literals
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
 """
 更新字段后，执行命令：
@@ -12,7 +13,7 @@ from django.db import models
 
 # 普通用户模型（不用于认证），models.Model ，如果带权限认证，需要继承自AbstractBaseUser
 # class User(AbstractBaseUser):
-class CustomUser(models.Model):
+class CustomUser(AbstractUser):
     """
     自定义用户模型
     角色说明：
@@ -33,13 +34,13 @@ class CustomUser(models.Model):
     )
 
     # 用户基本信息
-    username = models.CharField(("用户名"), max_length=150, unique=True)
-    password = models.CharField(("密码"), max_length=128)
-    email = models.EmailField(("邮箱"), blank=True)
-    is_active = models.BooleanField(("是否激活"), default=True)
-    is_staff = models.BooleanField(("是否职员"), default=False) # 新增 is_staff 字段
-    date_joined = models.DateTimeField(("注册时间"), auto_now_add=True)
-    last_login = models.DateTimeField(("最后登录"), blank=True, null=True)
+    # username = models.CharField(("用户名"), max_length=150, unique=True)
+    # password = models.CharField(("密码"), max_length=128)
+    # email = models.EmailField(("邮箱"), blank=True)
+    # is_active = models.BooleanField(("是否激活"), default=True)
+    # is_staff = models.BooleanField(("是否职员"), default=False) # 新增 is_staff 字段
+    # date_joined = models.DateTimeField(("注册时间"), auto_now_add=True)
+    # last_login = models.DateTimeField(("最后登录"), blank=True, null=True)
     
     # 自定义字段
     usercode = models.CharField(("用户编码"), max_length=120)
@@ -66,3 +67,20 @@ class CustomUser(models.Model):
         
     def __str__(self):
         return self.username
+    
+    groups = models.ManyToManyField(
+        'auth.Group',
+        verbose_name='groups',
+        blank=True,
+        help_text='The groups this user belongs to.',
+        related_name='customuser_set',
+        related_query_name='customuser',
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        verbose_name='user permissions',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        related_name='customuser_set',
+        related_query_name='customuser',
+    )

@@ -1,0 +1,48 @@
+{% extends 'cojHtml/base.html' %}
+
+{% block content %}
+<div class="layui-container">
+  <div class="layui-row layui-col-space15" style="margin-top:20px;">
+    <div class="layui-col-md12">
+      <span class="layui-breadcrumb" lay-separator="/" style="margin-bottom:10px;">
+        <a href="/">首页</a>
+        <a href="/teacher/competitions/competition_list/">竞赛列表</a>
+      </span>
+      <h2 class="layui-font-20" style="margin:20px 0 10px 0;">竞赛与试卷管理</h2>
+      <a class="layui-btn layui-btn-normal" href="{% url 'organize_competitions:create' %}" style="margin-bottom:15px;">新建竞赛/组卷</a>
+      <table class="layui-table">
+        <thead>
+          <tr><th>竞赛名称</th><th>创建时间</th><th>操作</th></tr>
+        </thead>
+        <tbody>
+          {% for competition in competitions %}
+          <tr>
+            <td>{{ competition.name }}</td>
+            <td>{{ competition.created_at }}</td>
+            <td><a class="layui-btn layui-btn-xs" href="{% url 'organize_competitions:paper_list' competition.id %}">查看试卷</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div id="competition-pagination"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+layui.use(['laypage'], function(){
+  var laypage = layui.laypage;
+  laypage.render({
+    elem: 'competition-pagination',
+    count: {{ competitions|length }},
+    limit: 10,
+    theme: '#1E9FFF',
+    jump: function(obj, first){
+      // 可扩展后端分页逻辑
+    }
+  });
+});
+</script>
+{% endblock %}

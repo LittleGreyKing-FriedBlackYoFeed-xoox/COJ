@@ -1,0 +1,62 @@
+{% extends 'cojHtml/base.html' %}
+
+{% block content %}
+<div class="layui-container">
+  <div class="layui-row layui-col-space15" style="margin-top:20px;">
+    <div class="layui-col-md12">
+      <span class="layui-breadcrumb" lay-separator="/" style="margin-bottom:10px;">
+        <a href="/">首页</a>
+        <a href="{% url 'organize_competitions:competition_list' %}">竞赛列表</a>
+        <a href="{% url 'organize_competitions:paper_list' paper.competition.id %}">试卷列表</a>
+        <a href="#">试卷详情</a>
+      </span>
+      <h2 class="layui-font-20" style="margin:20px 0 10px 0;">{{ paper.name }}</h2>
+      <p>所属竞赛：{{ paper.competition.name }}</p>
+      <h3 style="margin:20px 0 10px 0;">题目列表</h3>
+      <table class="layui-table">
+        <thead>
+          <tr>
+            <th>题目标题</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for problem in problems %}
+          <tr>
+            <td>{{ problem.title }}</td>
+            <td><a href="{% url 'student_practice:problem_detail' problem.id %}" class="layui-btn layui-btn-xs">答题</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <h3 style="margin:20px 0 10px 0;">分配用户</h3>
+      <table class="layui-table">
+        <thead>
+          <tr>
+            <th>用户名</th>
+            <th>分配时间</th>
+            <th>状态</th>
+            <th>首次登录时间</th>
+            <th>总时长</th>
+            <th>完成进度</th>
+            <th>完成率</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user_paper in user_papers %}
+          <tr>
+            <td>{{ user_paper.user.username }}</td>
+            <td>{{ user_paper.assigned_at }}</td>
+            <td>{{ user_paper.get_status_display }}</td>
+            <td>{{ user_paper.user.first_login_time|date:"Y-m-d H:i:s" }}</td>
+            <td>{{ user_paper.total_duration }}</td>
+            <td>{{ user_paper.completion_progress }}%</td>
+            <td>{{ user_paper.completion_rate }}%</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -30,4 +30,6 @@ urlpatterns = [
     # 学习反馈系统URL
     path("student/", include("urls.learning_feedback_urls")),
     
+    # 组织竞赛相关URL
+    path("teacher/competitions/", include("urls.organize_competitions_urls")),
 ]

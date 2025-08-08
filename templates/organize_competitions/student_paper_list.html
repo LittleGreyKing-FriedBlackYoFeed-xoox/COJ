@@ -1,0 +1,21 @@
+{% extends 'cojHtml/base.html' %}
+{% block content %}
+<div class="layui-container">
+  <h2 class="layui-font-20" style="margin:20px 0;">我的未完成试卷</h2>
+  <table class="layui-table">
+    <thead>
+      <tr><th>试卷名称</th><th>所属竞赛</th><th>分配时间</th><th>操作</th></tr>
+    </thead>
+    <tbody>
+      {% for assignment in assignments %}
+      <tr>
+        <td>{{ assignment.paper.name }}</td>
+        <td>{{ assignment.paper.competition.name }}</td>
+        <td>{{ assignment.assigned_at }}</td>
+        <td><a class="layui-btn layui-btn-xs" href="{% url 'organize_competitions:student_paper_detail' assignment.paper.id %}">进入试卷</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

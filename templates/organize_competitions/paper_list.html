@@ -1,0 +1,48 @@
+{% extends 'cojHtml/base.html' %}
+
+{% block content %}
+<div class="layui-container">
+  <div class="layui-row layui-col-space15" style="margin-top:20px;">
+    <div class="layui-col-md12">
+      <span class="layui-breadcrumb" lay-separator="/" style="margin-bottom:10px;">
+        <a href="/">首页</a>
+        <a href="/teacher/competitions/competition_list/">竞赛列表</a>
+        <a href="#">试卷列表</a>
+      </span>
+      <h2 class="layui-font-20" style="margin:20px 0 10px 0;">试卷列表 - {{ competition.name }}</h2>
+      <table class="layui-table">
+        <thead>
+          <tr><th>试卷名称</th><th>创建时间</th><th>操作</th></tr>
+        </thead>
+        <tbody>
+          {% for paper in papers %}
+          <tr>
+            <td>{{ paper.name }}</td>
+            <td>{{ paper.created_at }}</td>
+            <td><a class="layui-btn layui-btn-xs" href="{% url 'organize_competitions:paper_detail' paper.id %}">查看详情</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div id="paper-pagination"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+layui.use(['laypage'], function(){
+  var laypage = layui.laypage;
+  laypage.render({
+    elem: 'paper-pagination',
+    count: {{ papers|length }},
+    limit: 10,
+    theme: '#1E9FFF',
+    jump: function(obj, first){
+      // 可扩展后端分页逻辑
+    }
+  });
+});
+</script>
+{% endblock %}
