@@ -7,6 +7,8 @@ from views.userViews import index
 urlpatterns = [
     path('favicon.ico', RedirectView.as_view(url='/static/img/favicon.ico')),
     path("", index, name="home"),  # 首页
+    path('code_duplication_check/', include('urls.code_duplication_check_urls')),
+    path('notification/', include('urls.notification_urls')),
     path("admin/", admin.site.urls),
     
     # 用户相关URL

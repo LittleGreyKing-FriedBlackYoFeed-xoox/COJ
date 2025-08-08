@@ -2,23 +2,96 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Manual Review List</title>
+    <title>Manual Review List - Teacher Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <link rel="stylesheet" href="https://unpkg.com/layui@2.8.18/dist/css/layui.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
     <style>
         .code-preview {
-            max-width: 300px;
-            max-height: 100px;
+            max-width: 250px;
+            max-height: 80px;
             overflow: hidden;
             white-space: pre-wrap;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            background: #f5f5f5;
-            padding: 5px;
-            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 11px;
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+            position: relative;
+        }
+        .code-preview:hover {
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            position: absolute;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 1px solid #ddd;
+            width: 400px;
         }
         .filter-bar {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .stats-item {
+            text-align: center;
+        }
+        .stats-number {
+            font-size: 24px;
+            font-weight: bold;
+            display: block;
+        }
+        .stats-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        .priority-high {
+            border-left: 4px solid #ff5722;
+        }
+        .priority-medium {
+            border-left: 4px solid #ff9800;
+        }
+        .priority-low {
+            border-left: 4px solid #4caf50;
+        }
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .student-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .problem-title {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        .time-ago {
+            font-size: 11px;
+            color: #6c757d;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 5px;
         }
     </style>
 </head>
@@ -26,22 +99,77 @@
     <div class="layui-container" style="margin-top: 20px;">
         <div class="layui-row">
             <div class="layui-col-md12">
+                <!-- 统计卡片 -->
+                <div class="stats-card">
+                    <div class="layui-row">
+                        <div class="layui-col-md3">
+                            <div class="stats-item">
+                                <span class="stats-number" id="pendingCount">{{ reviews.paginator.count }}</span>
+                                <span class="stats-label">Total Reviews</span>
+                            </div>
+                        </div>
+                        <div class="layui-col-md3">
+                            <div class="stats-item">
+                                <span class="stats-number" id="reviewedCount">-</span>
+                                <span class="stats-label">Pending</span>
+                            </div>
+                        </div>
+                        <div class="layui-col-md3">
+                            <div class="stats-item">
+                                <span class="stats-number" id="rejectedCount">-</span>
+                                <span class="stats-label">Reviewed</span>
+                            </div>
+                        </div>
+                        <div class="layui-col-md3">
+                            <div class="stats-item">
+                                <span class="stats-number" id="totalCount">-</span>
+                                <span class="stats-label">Rejected</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="layui-card">
                     <div class="layui-card-header">
-                        <h2>Manual Review Requests</h2>
+                        <h2><i class="layui-icon layui-icon-edit"></i> Manual Review Dashboard</h2>
                     </div>
                     <div class="layui-card-body">
-                        <!-- 状态过滤器 -->
+                        <!-- 过滤器和搜索 -->
                         <div class="filter-bar">
-                            <div class="layui-form-item">
-                                <label class="layui-form-label">Status Filter:</label>
-                                <div class="layui-input-inline">
-                                    <select id="statusFilter" lay-filter="statusFilter">
-                                        <option value="all" {% if current_status == 'all' %}selected{% endif %}>All</option>
-                                        <option value="pending" {% if current_status == 'pending' %}selected{% endif %}>Pending</option>
-                                        <option value="reviewed" {% if current_status == 'reviewed' %}selected{% endif %}>Reviewed</option>
-                                        <option value="rejected" {% if current_status == 'rejected' %}selected{% endif %}>Rejected</option>
-                                    </select>
+                            <div class="layui-row">
+                                <div class="layui-col-md4">
+                                    <div class="layui-form-item">
+                                        <label class="layui-form-label">Status:</label>
+                                        <div class="layui-input-block">
+                                            <select id="statusFilter" lay-filter="statusFilter">
+                                                <option value="all" {% if current_status == 'all' %}selected{% endif %}>All Status</option>
+                                                <option value="pending" {% if current_status == 'pending' %}selected{% endif %}>🟡 Pending</option>
+                                                <option value="reviewed" {% if current_status == 'reviewed' %}selected{% endif %}>🟢 Reviewed</option>
+                                                <option value="rejected" {% if current_status == 'rejected' %}selected{% endif %}>🔴 Rejected</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="layui-col-md4">
+                                    <div class="layui-form-item">
+                                        <label class="layui-form-label">Search:</label>
+                                        <div class="layui-input-block">
+                                            <input type="text" id="searchInput" placeholder="Search by student or problem..." class="layui-input">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="layui-col-md4">
+                                    <div class="layui-form-item">
+                                        <label class="layui-form-label">Actions:</label>
+                                        <div class="layui-input-block">
+                                            <button class="layui-btn layui-btn-sm" onclick="refreshPage()">
+                                                <i class="layui-icon layui-icon-refresh"></i> Refresh
+                                            </button>
+                                            <button class="layui-btn layui-btn-sm layui-btn-normal" onclick="batchReview()">
+                                                <i class="layui-icon layui-icon-edit"></i> Batch Review
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -50,46 +178,85 @@
                         <table class="layui-table" lay-filter="reviewTable">
                             <thead>
                                 <tr>
-                                    <th>Student</th>
-                                    <th>Problem</th>
-                                    <th>Code Preview</th>
-                                    <th>Submit Time</th>
-                                    <th>Status</th>
-                                    <th>Teacher</th>
-                                    <th>Review Time</th>
-                                    <th>Action</th>
+                                    <th width="5%">
+                                        <input type="checkbox" lay-filter="checkAll" lay-skin="primary">
+                                    </th>
+                                    <th width="15%">Student</th>
+                                    <th width="15%">Problem</th>
+                                    <th width="25%">Code Preview</th>
+                                    <th width="10%">Submit Time</th>
+                                    <th width="8%">Status</th>
+                                    <th width="10%">Teacher</th>
+                                    <th width="12%">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for review in reviews %}
-                                <tr>
-                                    <td>{{ review.student.username }}</td>
-                                    <td>{{ review.problem.title }}</td>
+                                <tr class="{% if review.status == 'pending' %}priority-high{% elif review.status == 'reviewed' %}priority-low{% else %}priority-medium{% endif %}">
                                     <td>
-                                        <div class="code-preview">{{ review.submitted_code|truncatechars:100 }}</div>
+                                        <input type="checkbox" name="reviewIds" value="{{ review.id }}" lay-skin="primary">
                                     </td>
-                                    <td>{{ review.request_time|date:"Y-m-d H:i" }}</td>
+                                    <td>
+                                        <div class="student-info">
+                                            <div class="student-avatar">{{ review.student.username|first|upper }}</div>
+                                            <div>
+                                                <div style="font-weight: 500;">{{ review.student.username }}</div>
+                                                {% if review.student.real_name %}
+                                                <div style="font-size: 11px; color: #6c757d;">{{ review.student.real_name }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="problem-title">{{ review.problem.title }}</div>
+                                        <div style="font-size: 11px; color: #6c757d;">ID: {{ review.problem.id }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="code-preview" title="Click to expand">{{ review.code|truncatechars:80 }}</div>
+                                    </td>
+                                    <td>
+                                        <div>{{ review.request_time|date:"m-d H:i" }}</div>
+                                        <div class="time-ago">{{ review.request_time|timesince }} ago</div>
+                                    </td>
                                     <td>
                                         <span class="layui-badge 
                                             {% if review.status == 'pending' %}layui-bg-orange
                                             {% elif review.status == 'reviewed' %}layui-bg-green
                                             {% elif review.status == 'rejected' %}layui-bg-red
                                             {% endif %}">
+                                            {% if review.status == 'pending' %}🟡
+                                            {% elif review.status == 'reviewed' %}🟢
+                                            {% elif review.status == 'rejected' %}🔴
+                                            {% endif %}
                                             {{ review.get_status_display }}
                                         </span>
                                     </td>
-                                    <td>{{ review.teacher.username|default:"-" }}</td>
-                                    <td>{{ review.review_time|date:"Y-m-d H:i"|default:"-" }}</td>
                                     <td>
-                                        {% if review.status == 'pending' %}
-                                        <button class="layui-btn layui-btn-sm" onclick="reviewDetail({{ review.id }})">
-                                            Review
-                                        </button>
+                                        {% if review.teacher %}
+                                            <div style="font-weight: 500;">{{ review.teacher.username }}</div>
+                                            <div class="time-ago">{{ review.review_time|date:"m-d H:i" }}</div>
                                         {% else %}
-                                        <button class="layui-btn layui-btn-sm layui-btn-normal" onclick="reviewDetail({{ review.id }})">
-                                            View
-                                        </button>
+                                            <span style="color: #6c757d;">未分配</span>
                                         {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            {% if review.status == 'pending' %}
+                                            <button class="layui-btn layui-btn-xs layui-btn-warm" onclick="quickReview({{ review.id }})" title="Quick Review">
+                                                <i class="layui-icon layui-icon-edit"></i>
+                                            </button>
+                                            <button class="layui-btn layui-btn-xs" onclick="reviewDetail({{ review.id }})" title="Detailed Review">
+                                                <i class="layui-icon layui-icon-more"></i>
+                                            </button>
+                                            {% else %}
+                                            <button class="layui-btn layui-btn-xs layui-btn-normal" onclick="reviewDetail({{ review.id }})" title="View Details">
+                                                <i class="layui-icon layui-icon-search"></i>
+                                            </button>
+                                            {% endif %}
+                                            <button class="layui-btn layui-btn-xs layui-btn-primary" onclick="viewCode({{ review.id }})" title="View Code">
+                                                <i class="layui-icon layui-icon-code"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -116,17 +283,33 @@
 
     <script src="https://unpkg.com/layui@2.8.18/dist/layui.js"></script>
     <script>
-        layui.use(['form', 'laypage'], function(){
+        layui.use(['element', 'form', 'laypage', 'layer', 'table'], function(){
+            var element = layui.element;
             var form = layui.form;
             var laypage = layui.laypage;
+            var layer = layui.layer;
+            var table = layui.table;
 
-            // 状态过滤器变化事件
+            // 状态筛选
             form.on('select(statusFilter)', function(data){
                 var status = data.value;
                 var url = new URL(window.location);
-                url.searchParams.set('status', status);
-                url.searchParams.delete('page'); // 重置页码
+                if (status) {
+                    url.searchParams.set('status', status);
+                } else {
+                    url.searchParams.delete('status');
+                }
+                url.searchParams.delete('page');
                 window.location.href = url.toString();
+            });
+
+            // 全选功能
+            form.on('checkbox(checkAll)', function(data){
+                var checkboxes = document.querySelectorAll('input[name="reviewIds"]');
+                checkboxes.forEach(function(checkbox) {
+                    checkbox.checked = data.elem.checked;
+                });
+                form.render('checkbox');
             });
 
             // 分页
@@ -149,6 +332,86 @@
 
         function reviewDetail(reviewId) {
             window.location.href = '/manual_review/review/' + reviewId + '/';
+        }
+
+        // 刷新页面
+        function refreshPage() {
+            window.location.reload();
+        }
+
+        // 批量审核
+        function batchReview() {
+            var checkedIds = [];
+            document.querySelectorAll('input[name="reviewIds"]:checked').forEach(function(checkbox) {
+                checkedIds.push(checkbox.value);
+            });
+            
+            if (checkedIds.length === 0) {
+                layui.layer.msg('Please select at least one review request', {icon: 2});
+                return;
+            }
+            
+            layui.layer.confirm('Are you sure to batch review ' + checkedIds.length + ' requests?', {
+                btn: ['Confirm', 'Cancel']
+            }, function(index) {
+                // 这里可以添加批量审核的AJAX请求
+                layui.layer.msg('批量审核功能待完善', {icon: 1});
+                layui.layer.close(index);
+            });
+        }
+
+        // 快速审核功能
+        function quickReview(reviewId) {
+            layui.layer.open({
+                type: 1,
+                title: 'Quick Review',
+                area: ['600px', '400px'],
+                content: `
+                    <div style="padding: 20px;">
+                        <form class="layui-form" id="quickReviewForm">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">Action</label>
+                                <div class="layui-input-block">
+                                    <input type="radio" name="action" value="approve" title="Approve" checked>
+                                    <input type="radio" name="action" value="reject" title="Reject">
+                                </div>
+                            </div>
+                            <div class="layui-form-item layui-form-text">
+                                <label class="layui-form-label">Comment</label>
+                                <div class="layui-input-block">
+                                    <textarea name="comment" placeholder="Enter your review comment..." class="layui-textarea" rows="5"></textarea>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <div class="layui-input-block">
+                                    <button type="submit" class="layui-btn">Submit</button>
+                                    <button type="button" class="layui-btn layui-btn-primary" onclick="layui.layer.closeAll()">Cancel</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                `,
+                success: function() {
+                    layui.form.render();
+                    layui.form.on('submit()', function(data) {
+                        // 这里添加快速审核的AJAX请求
+                        layui.layer.msg('Quick review submitted successfully', {icon: 1});
+                        layui.layer.closeAll();
+                        setTimeout(() => window.location.reload(), 1000);
+                        return false;
+                    });
+                }
+            });
+        }
+
+        // 查看代码功能
+        function viewCode(reviewId) {
+            layui.layer.open({
+                type: 2,
+                title: 'View Code',
+                area: ['80%', '80%'],
+                content: '/manual_review/review/' + reviewId + '/?view_only=1'
+            });
         }
     </script>
 </body>

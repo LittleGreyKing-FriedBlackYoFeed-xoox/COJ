@@ -20,5 +20,32 @@ class PaperAssignment(models.Model):
     assigned_at = models.DateTimeField(auto_now_add=True)
     is_completed = models.BooleanField(default=False)
     completed_at = models.DateTimeField(null=True, blank=True)
+    
+    # 新增字段用于更详细的答题数据
+    completion_progress = models.IntegerField(default=0, help_text="完成进度百分比 (0-100)")
+    completion_rate = models.IntegerField(default=0, help_text="正确率百分比 (0-100)")
+    total_duration_minutes = models.IntegerField(default=0, help_text="总答题时长(分钟)")
+    first_login_time = models.DateTimeField(null=True, blank=True, help_text="首次登录答题时间")
+    
+    class Meta:
+        unique_together = ('paper', 'user')
+    
+    def get_status_display(self):
+        """获取状态显示文本"""
+        if self.is_completed:
+            return "已完成"
+        elif self.completion_progress > 0:
+            return "进行中"
+        else:
+            return "未开始"
+    
+    def get_progress_color(self):
+        """获取进度条颜色"""
+        if self.completion_progress >= 80:
+            return "layui-bg-green"
+        elif self.completion_progress >= 50:
+            return "layui-bg-orange"
+        else:
+            return "layui-bg-red"
 
 # 假设题目模型已在 own_models.problem_models.py 中定义为 Problem

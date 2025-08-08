@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Duplication Check - Code Online Judge</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}">
+    <style>
+        :root {
+            --light-gray: #f5f7fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --text-dark: #343a40;
+            --text-light: #6c757d;
+            --accent-color: #5c7cfa;
+            --border-color: #dee2e6;
+            --hover-bg: #e2e6ea;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-gray);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        /* Header styles */
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: var(--text-dark);
+            font-size: 22px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .logo i {
+            margin-right: 12px;
+            font-size: 26px;
+            color: var(--accent-color);
+            background: linear-gradient(135deg, var(--accent-color), #748ffc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Breadcrumb navigation style */
+        .breadcrumb-nav {
+            background-color: white;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .breadcrumb-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .breadcrumb-item {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+        
+        .breadcrumb-item a {
+            color: var(--accent-color);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: #4c63d2;
+            text-decoration: underline;
+        }
+        
+        .breadcrumb-separator {
+            margin: 0 8px;
+            color: var(--text-light);
+        }
+
+        .content {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light-gray);
+        }
+
+        .card-header h2, .card-header h3 {
+            margin: 0;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .card-header i {
+            margin-right: 10px;
+            color: var(--accent-color);
+            font-size: 20px;
+        }
+
+        /* Similarity bar styles */
+        .similarity-bar {
+            width: 100%;
+            background-color: #e9ecef;
+            border-radius: 6px;
+            height: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .similarity-bar-inner {
+            height: 100%;
+            text-align: center;
+            color: white;
+            font-weight: 600;
+            line-height: 24px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            border-radius: 6px;
+            transition: width 0.3s ease;
+            font-size: 12px;
+        }
+
+        /* Enhanced table styles */
+        .layui-table {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .layui-table th {
+            background-color: var(--light-gray);
+            color: var(--text-dark);
+            font-weight: 600;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .layui-table td {
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: middle;
+        }
+
+        .layui-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* Form styles */
+        .layui-form-label {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .layui-btn {
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .layui-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .layui-btn-xs {
+            padding: 4px 12px;
+            font-size: 12px;
+        }
+
+        /* Empty state styles */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: var(--medium-gray);
+            margin-bottom: 15px;
+        }
+
+        .footer {
+            background-color: white;
+            color: var(--text-light);
+            text-align: center;
+            padding: 25px 15px;
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            font-size: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                margin: 20px auto;
+                padding: 0 15px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .breadcrumb-container {
+                padding: 0 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <i class="layui-icon layui-icon-code-circle"></i>
+                Code Online Judge(LCTC)
+            </a>
+        </div>
+    </header>
+
+    <div class="breadcrumb-nav">
+        <div class="breadcrumb-container">
+            <span class="breadcrumb-item"><a href="/">Home</a></span>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-item"><a href="{% url 'code_duplication_check:code_duplication_check' %}">Code Duplication Check</a></span>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="layui-icon layui-icon-search"></i> Code Duplication Check</h2>
+            </div>
+            <form class="layui-form" action="" method="post" lay-filter="checkForm">
+                {% csrf_token %}
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Select Problem</label>
+                    <div class="layui-input-block">
+                        <select name="problem_id" lay-filter="problem_select" lay-search>
+                            <option value="">Select a problem to check</option>
+                            {% for problem in problems %}
+                            <option value="{{ problem.id }}">{{ problem.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-submit lay-filter="check_duplication">
+                            <i class="layui-icon layui-icon-play"></i> Run Check
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="layui-icon layui-icon-chart-line"></i> Duplication Results</h3>
+            </div>
+            {% if checks %}
+            <table class="layui-table" lay-skin="line">
+                <colgroup>
+                    <col width="120">
+                    <col width="150">
+                    <col>
+                    <col width="150">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>Submission ID</th>
+                        <th>User</th>
+                        <th>Similarity Score</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for check in checks %}
+                    <tr>
+                        <td>#{{ check.submission.id }}</td>
+                        <td>{{ check.submission.user.username }}</td>
+                        <td>
+                            <div class="similarity-bar">
+                                <div class="similarity-bar-inner" style="width: {{ check.similarity_score|floatformat:1 }}%; background-color: {% if check.similarity_score > 90 %}#dc3545{% elif check.similarity_score > 80 %}#fd7e14{% elif check.similarity_score > 70 %}#ffc107{% else %}#28a745{% endif %};">
+                                    {{ check.similarity_score|floatformat:1 }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{% url 'code_duplication_check:duplication_details' check.id %}" class="layui-btn layui-btn-xs">
+                                <i class="layui-icon layui-icon-tabs"></i> View Details
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <i class="layui-icon layui-icon-survey"></i>
+                <p>No duplication checks have been run yet.</p>
+                <p>Select a problem above and click "Run Check" to start analyzing code similarities.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <footer class="footer">
+        © 2025 Code Online Judge Copyright | Professional Online Judge Platform
+    </footer>
+
+    <script src="{% static 'js/jquery-3.7.1.js' %}"></script>
+    <script src="{% static 'layui-v2.11.4/layui/layui.js' %}"></script>
+    <script>
+        layui.use(['form', 'layer'], function(){
+            var form = layui.form;
+            var layer = layui.layer;
+
+            form.on('submit(check_duplication)', function(data){
+                if (!data.field.problem_id) {
+                    layer.msg('Please select a problem first!', {icon: 2});
+                    return false;
+                }
+                
+                layer.msg('Running duplication check...', {
+                    icon: 16, 
+                    shade: 0.3, 
+                    time: 0
+                });
+                return true;
+            });
+
+            // Form validation
+            form.verify({
+                problem_id: function(value){
+                    if(!value){
+                        return 'Please select a problem to check';
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
+{% block scripts %}
+<script>
+layui.use(['form', 'layer'], function(){
+    var form = layui.form;
+    var layer = layui.layer;
+
+    form.on('submit(check_duplication)', function(data){
+        layer.msg('Running duplication check...', {icon: 16, shade: 0.3, time: 0});
+        return true;
+    });
+});
+</script>
+{% endblock %}

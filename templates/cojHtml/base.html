@@ -147,7 +147,14 @@
                 <i class="layui-icon layui-icon-code-circle"></i>
                 Code Online Judge(LCTC)
             </a>
-            <!-- 去除右上角Teacher下拉菜单 -->
+            <ul class="layui-nav layui-layout-right">
+                <li class="layui-nav-item">
+                    <a href="javascript:;">Teacher</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="{% url 'code_duplication_check:code_duplication_check' %}">Code Duplication Check</a></dd>
+                    </dl>
+                </li>
+            </ul>
         </div>
     </header>
 

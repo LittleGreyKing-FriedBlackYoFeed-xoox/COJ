@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duplication Details - Code Online Judge</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'layui-v2.11.4/layui/css/layui.css' %}">
+    <style>
+        :root {
+            --light-gray: #f5f7fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --text-dark: #343a40;
+            --text-light: #6c757d;
+            --accent-color: #5c7cfa;
+            --border-color: #dee2e6;
+            --hover-bg: #e2e6ea;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-gray);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        /* Header styles */
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: var(--text-dark);
+            font-size: 22px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .logo i {
+            margin-right: 12px;
+            font-size: 26px;
+            color: var(--accent-color);
+            background: linear-gradient(135deg, var(--accent-color), #748ffc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Breadcrumb navigation style */
+        .breadcrumb-nav {
+            background-color: white;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .breadcrumb-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .breadcrumb-item {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+        
+        .breadcrumb-item a {
+            color: var(--accent-color);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: #4c63d2;
+            text-decoration: underline;
+        }
+        
+        .breadcrumb-separator {
+            margin: 0 8px;
+            color: var(--text-light);
+        }
+
+        .content {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light-gray);
+        }
+
+        .card-header h2, .card-header h3, .card-header h4 {
+            margin: 0;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .card-header i {
+            margin-right: 10px;
+            color: var(--accent-color);
+            font-size: 20px;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .info-card h5 {
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .info-item {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--text-dark);
+            min-width: 120px;
+        }
+
+        .info-value {
+            color: var(--text-light);
+        }
+
+        .similarity-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 16px;
+            margin-left: 10px;
+        }
+
+        .similarity-high {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .similarity-medium {
+            background-color: #fd7e14;
+            color: white;
+        }
+
+        .similarity-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+
+        .similarity-low {
+            background-color: #28a745;
+            color: white;
+        }
+
+        /* Diff styles */
+        .diff_legend {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: var(--light-gray);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .diff_legend span {
+            display: inline-flex;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .diff_legend .sub, .diff_legend .add, .diff_legend .chg {
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: white;
+            margin-right: 5px;
+        }
+
+        .diff_legend .sub { 
+            background-color: #dc3545;
+        }
+        
+        .diff_legend .add { 
+            background-color: #28a745;
+        }
+        
+        .diff_legend .chg { 
+            background-color: #ffc107;
+            color: #212529;
+        }
+
+        table.diff {
+            border-collapse: collapse;
+            width: 100%;
+            white-space: pre-wrap;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .diff th, .diff td {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+
+        .diff th { 
+            background-color: var(--light-gray);
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .diff .diff_header { 
+            text-align: center; 
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .diff .diff_next { 
+            background-color: var(--medium-gray);
+        }
+
+        .diff .diff_add { 
+            background-color: #d4edda;
+        }
+
+        .diff .diff_chg { 
+            background-color: #fff3cd;
+        }
+
+        .diff .diff_sub { 
+            background-color: #f8d7da;
+        }
+
+        .action-buttons {
+            margin-top: 30px;
+            text-align: right;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .layui-btn {
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .layui-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .footer {
+            background-color: white;
+            color: var(--text-light);
+            text-align: center;
+            padding: 25px 15px;
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            font-size: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                margin: 20px auto;
+                padding: 0 15px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .breadcrumb-container {
+                padding: 0 15px;
+            }
+
+            .action-buttons {
+                justify-content: center;
+            }
+
+            .layui-col-md6 {
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <i class="layui-icon layui-icon-code-circle"></i>
+                Code Online Judge(LCTC)
+            </a>
+        </div>
+    </header>
+
+    <div class="breadcrumb-nav">
+        <div class="breadcrumb-container">
+            <span class="breadcrumb-item"><a href="/">Home</a></span>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-item"><a href="{% url 'code_duplication_check:code_duplication_check' %}">Code Duplication Check</a></span>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-item">Duplication Details</span>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="layui-icon layui-icon-template-1"></i> Duplication Details</h2>
+            </div>
+            
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md6">
+                    <div class="info-card">
+                        <h5><i class="layui-icon layui-icon-file"></i> Original Submission</h5>
+                        <div class="info-item">
+                            <span class="info-label">Submission ID:</span>
+                            <span class="info-value">#{{ check.submission.id }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">User:</span>
+                            <span class="info-value">{{ check.submission.user.username }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Time:</span>
+                            <span class="info-value">{{ check.submission.created_at|date:"Y-m-d H:i:s" }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md6">
+                    <div class="info-card">
+                        <h5><i class="layui-icon layui-icon-file"></i> Similar Submission</h5>
+                        <div class="info-item">
+                            <span class="info-label">Submission ID:</span>
+                            <span class="info-value">#{{ details.similar_to }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">User:</span>
+                            <span class="info-value">{{ similar_submission.user.username }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Time:</span>
+                            <span class="info-value">{{ similar_submission.created_at|date:"Y-m-d H:i:s" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <div class="card-header">
+                    <h4>
+                        <i class="layui-icon layui-icon-rate"></i> Similarity Analysis
+                        <span class="similarity-badge {% if check.similarity_score > 90 %}similarity-high{% elif check.similarity_score > 80 %}similarity-medium{% elif check.similarity_score > 70 %}similarity-warning{% else %}similarity-low{% endif %}">
+                            {{ check.similarity_score|floatformat:1 }}%
+                        </span>
+                    </h4>
+                </div>
+                <div class="diff_legend">
+                    <span><span class="add"></span>Added Lines</span>
+                    <span><span class="sub"></span>Deleted Lines</span>
+                    <span><span class="chg"></span>Changed Lines</span>
+                </div>
+                <div style="max-height: 600px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px;">
+                    {{ details.diff|safe }}
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <a href="{% url 'code_duplication_check:code_duplication_check' %}" class="layui-btn layui-btn-primary">
+                    <i class="layui-icon layui-icon-left"></i> Back to List
+                </a>
+                <button id="push-to-student" class="layui-btn layui-btn-normal">
+                    <i class="layui-icon layui-icon-release"></i> Push to Student
+                </button>
+                <a href="{% url 'code_duplication_check:download_report' check.id %}" class="layui-btn layui-btn-warm">
+                    <i class="layui-icon layui-icon-download-circle"></i> Download Report
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        © 2025 Code Online Judge Copyright | Professional Online Judge Platform
+    </footer>
+
+    <script src="{% static 'js/jquery-3.7.1.js' %}"></script>
+    <script src="{% static 'layui-v2.11.4/layui/layui.js' %}"></script>
+    <script>
+        layui.use(['layer'], function(){
+            var layer = layui.layer;
+
+            document.getElementById('push-to-student').addEventListener('click', function(){
+                var checkId = {{ check.id }};
+                
+                layer.confirm('Are you sure you want to send this duplication report to the student?', {
+                    icon: 3,
+                    title: 'Confirm Action'
+                }, function(index){
+                    // Here you would make an AJAX call to send notification
+                    // For now, just show a success message
+                    layer.msg('Notification sent to student successfully!', {icon: 1});
+                    layer.close(index);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
+{% block script %}
+<script>
+layui.use(['layer', 'jquery'], function(){
+    var layer = layui.layer;
+    var $ = layui.jquery;
+
+    $('#push-to-student').on('click', function(){
+        var checkId = {{ check.id }};
+        $.ajax({
+            url: '{% url "notification:send_notification" %}',
+            type: 'POST',
+            data: JSON.stringify({'check_id': checkId}),
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            success: function(res){
+                if(res.status === 'success'){
+                    layer.msg(res.message, {icon: 1});
+                } else {
+                    layer.msg(res.message, {icon: 2});
+                }
+            },
+            error: function(){
+                layer.msg('An error occurred.', {icon: 2});
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

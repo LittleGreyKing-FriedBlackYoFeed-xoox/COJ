@@ -247,15 +247,11 @@ def student_problem_detail(request, problem_id):
         })
     
     except Exception as e:
-        # Log error and return friendly error page
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(f"Error in student_problem_detail: {str(e)}")
-        
-        # 返回错误页面
+        error_message = f"Error in student_problem_detail: {e}"
+        print(error_message)
         return render(request, 'error.html', {
-            'error_message': 'Error loading problem details, please try again later.',
-            'error_details': str(e) if DEBUG else None
+            'error_message': '加载题目详情时出错，请稍后重试。',
+            'error_details': str(e) if settings.DEBUG else None
         })
 
 # Student code submission

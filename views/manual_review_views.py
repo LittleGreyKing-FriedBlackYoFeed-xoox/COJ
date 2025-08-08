@@ -53,7 +53,7 @@ def request_manual_review(request):
         review_request = ManualReviewRequest.objects.create(
             student=user,
             problem=problem,
-            submitted_code=code
+            code=code
         )
         
         return JsonResponse({
@@ -74,30 +74,56 @@ def teacher_review_list(request):
     if not (user.is_teacher() or user.is_admin()):
         return redirect('user:login')
     
-    # 获取状态过滤参数
-    status_filter = request.GET.get('status', 'pending')
-    if status_filter not in ['pending', 'reviewed', 'rejected', 'all']:
-        status_filter = 'pending'
+    # 获取筛选和搜索参数
+    status_filter = request.GET.get('status', '')
+    search_query = request.GET.get('search', '').strip()
     
-    # 根据状态过滤
-    if status_filter == 'all':
-        reviews = ManualReviewRequest.objects.all()
-    else:
-        reviews = ManualReviewRequest.objects.filter(status=status_filter)
+    # 构建查询，使用select_related优化数据库查询
+    reviews = ManualReviewRequest.objects.select_related(
+        'student', 'problem', 'teacher'
+    ).all()
+    
+    # 状态筛选
+    if status_filter and status_filter != 'all':
+        reviews = reviews.filter(status=status_filter)
+    
+    # 搜索功能
+    if search_query:
+        from django.db.models import Q
+        reviews = reviews.filter(
+            Q(student__username__icontains=search_query) |
+            Q(student__real_name__icontains=search_query) |
+            Q(problem__title__icontains=search_query) |
+            Q(problem__id__icontains=search_query) |
+            Q(code__icontains=search_query)
+        )
     
     # 按请求时间倒序排列
     reviews = reviews.order_by('-request_time')
     
+    # 获取统计数据
+    total_count = ManualReviewRequest.objects.count()
+    pending_count = ManualReviewRequest.objects.filter(status='pending').count()
+    reviewed_count = ManualReviewRequest.objects.filter(status='reviewed').count()
+    rejected_count = ManualReviewRequest.objects.filter(status='rejected').count()
+    
     # 分页处理
     from django.core.paginator import Paginator
-    paginator = Paginator(reviews, 10)  # 每页显示10条记录
+    paginator = Paginator(reviews, 15)  # 增加每页显示数量
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
     context = {
         'reviews': page_obj,
         'current_status': status_filter,
+        'search_query': search_query,
         'status_choices': ManualReviewRequest.STATUS_CHOICES,
+        'stats': {
+            'total': total_count,
+            'pending': pending_count,
+            'reviewed': reviewed_count,
+            'rejected': rejected_count,
+        }
     }
     
     return render(request, 'manual_review/teacher_review_list.html', context)

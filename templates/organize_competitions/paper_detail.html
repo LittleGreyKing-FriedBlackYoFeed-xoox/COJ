@@ -4,59 +4,289 @@
 <div class="layui-container">
   <div class="layui-row layui-col-space15" style="margin-top:20px;">
     <div class="layui-col-md12">
+      <!-- 面包屑导航 -->
       <span class="layui-breadcrumb" lay-separator="/" style="margin-bottom:10px;">
         <a href="/">首页</a>
         <a href="{% url 'organize_competitions:competition_list' %}">竞赛列表</a>
         <a href="{% url 'organize_competitions:paper_list' paper.competition.id %}">试卷列表</a>
         <a href="#">试卷详情</a>
       </span>
-      <h2 class="layui-font-20" style="margin:20px 0 10px 0;">{{ paper.name }}</h2>
-      <p>所属竞赛：{{ paper.competition.name }}</p>
-      <h3 style="margin:20px 0 10px 0;">题目列表</h3>
-      <table class="layui-table">
-        <thead>
-          <tr>
-            <th>题目标题</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for problem in problems %}
-          <tr>
-            <td>{{ problem.title }}</td>
-            <td><a href="{% url 'student_practice:problem_detail' problem.id %}" class="layui-btn layui-btn-xs">答题</a></td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      <h3 style="margin:20px 0 10px 0;">分配用户</h3>
-      <table class="layui-table">
-        <thead>
-          <tr>
-            <th>用户名</th>
-            <th>分配时间</th>
-            <th>状态</th>
-            <th>首次登录时间</th>
-            <th>总时长</th>
-            <th>完成进度</th>
-            <th>完成率</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for user_paper in user_papers %}
-          <tr>
-            <td>{{ user_paper.user.username }}</td>
-            <td>{{ user_paper.assigned_at }}</td>
-            <td>{{ user_paper.get_status_display }}</td>
-            <td>{{ user_paper.user.first_login_time|date:"Y-m-d H:i:s" }}</td>
-            <td>{{ user_paper.total_duration }}</td>
-            <td>{{ user_paper.completion_progress }}%</td>
-            <td>{{ user_paper.completion_rate }}%</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      
+      <!-- 试卷基本信息 -->
+      <div class="layui-card">
+        <div class="layui-card-header">
+          <h2 class="layui-font-20" style="margin:0;">{{ paper.name }}</h2>
+        </div>
+        <div class="layui-card-body">
+          <p><strong>所属竞赛：</strong>{{ paper.competition.name }}</p>
+          <p><strong>创建时间：</strong>{{ paper.created_at|date:"Y-m-d H:i:s" }}</p>
+        </div>
+      </div>
+      
+      <!-- 题目列表 -->
+      <div class="layui-card" style="margin-top:15px;">
+        <div class="layui-card-header">
+          <div class="layui-row">
+            <div class="layui-col-md6">
+              <h3 style="margin:0;">题目列表 ({{ problems.count }}题)</h3>
+            </div>
+            <div class="layui-col-md6" style="text-align:right;">
+              <a href="{% url 'organize_competitions:student_paper_detail' paper.id %}" 
+                 class="layui-btn layui-btn-sm layui-btn-normal">
+                <i class="layui-icon layui-icon-edit"></i> 进入答题界面
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="layui-card-body">
+          <table class="layui-table" lay-skin="line">
+            <thead>
+              <tr>
+                <th width="80">序号</th>
+                <th>题目标题</th>
+                <th width="120">难度</th>
+                <th width="150">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for problem in problems %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>
+                  <a href="{% url 'student_practice:problem_detail' problem.id %}" 
+                     class="layui-font-blue" style="text-decoration:none;">
+                    {{ problem.title }}
+                  </a>
+                </td>
+                <td>
+                  <span class="layui-badge 
+                    {% if problem.difficulty == 'easy' %}layui-bg-green
+                    {% elif problem.difficulty == 'medium' %}layui-bg-orange
+                    {% else %}layui-bg-red{% endif %}">
+                    {{ problem.get_difficulty_display }}
+                  </span>
+                </td>
+                <td>
+                  <a href="{% url 'student_practice:problem_detail' problem.id %}" 
+                     class="layui-btn layui-btn-xs layui-btn-normal">
+                    <i class="layui-icon layui-icon-edit"></i> 答题
+                  </a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="4" style="text-align:center;color:#999;">暂无题目</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- 用户答题统计 -->
+      <div class="layui-card" style="margin-top:15px;">
+        <div class="layui-card-header">
+          <h3 style="margin:0;">答题统计</h3>
+        </div>
+        <div class="layui-card-body">
+          <div class="layui-row layui-col-space10">
+            <div class="layui-col-md3">
+              <div class="layui-card" style="text-align:center;">
+                <div class="layui-card-body">
+                  <h2 style="color:#1E9FFF;margin:0;">{{ total_assignments }}</h2>
+                  <p style="margin:5px 0 0 0;">总人数</p>
+                </div>
+              </div>
+            </div>
+            <div class="layui-col-md3">
+              <div class="layui-card" style="text-align:center;">
+                <div class="layui-card-body">
+                  <h2 style="color:#5FB878;margin:0;">{{ completed_count }}</h2>
+                  <p style="margin:5px 0 0 0;">已完成</p>
+                </div>
+              </div>
+            </div>
+            <div class="layui-col-md3">
+              <div class="layui-card" style="text-align:center;">
+                <div class="layui-card-body">
+                  <h2 style="color:#FFB800;margin:0;">{{ in_progress_count }}</h2>
+                  <p style="margin:5px 0 0 0;">进行中</p>
+                </div>
+              </div>
+            </div>
+            <div class="layui-col-md3">
+              <div class="layui-card" style="text-align:center;">
+                <div class="layui-card-body">
+                  <h2 style="color:#FF5722;margin:0;">{{ not_started_count }}</h2>
+                  <p style="margin:5px 0 0 0;">未开始</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 用户答题详情 -->
+      <div class="layui-card" style="margin-top:15px;">
+        <div class="layui-card-header">
+          <div class="layui-row">
+            <div class="layui-col-md6">
+              <h3 style="margin:0;">用户答题详情</h3>
+            </div>
+            <div class="layui-col-md6" style="text-align:right;">
+              <!-- 状态筛选 -->
+              <div class="layui-btn-group">
+                <a href="?status=all" class="layui-btn layui-btn-sm {% if status_filter == 'all' %}layui-btn-normal{% else %}layui-btn-primary{% endif %}">
+                  全部 ({{ total_assignments }})
+                </a>
+                <a href="?status=completed" class="layui-btn layui-btn-sm {% if status_filter == 'completed' %}layui-btn-normal{% else %}layui-btn-primary{% endif %}">
+                  已完成 ({{ completed_count }})
+                </a>
+                <a href="?status=in_progress" class="layui-btn layui-btn-sm {% if status_filter == 'in_progress' %}layui-btn-normal{% else %}layui-btn-primary{% endif %}">
+                  进行中 ({{ in_progress_count }})
+                </a>
+                <a href="?status=not_started" class="layui-btn layui-btn-sm {% if status_filter == 'not_started' %}layui-btn-normal{% else %}layui-btn-primary{% endif %}">
+                  未开始 ({{ not_started_count }})
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="layui-card-body">
+          <table class="layui-table" lay-skin="line">
+            <thead>
+              <tr>
+                <th width="80">序号</th>
+                <th width="120">用户名</th>
+                <th width="100">状态</th>
+                <th width="120">完成进度</th>
+                <th width="80">正确率</th>
+                <th width="100">答题时长</th>
+                <th width="140">首次登录</th>
+                <th width="140">完成时间</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user_paper in user_papers %}
+              <tr>
+                <td>{{ forloop.counter|add:user_papers.start_index|add:"-1" }}</td>
+                <td>
+                  <strong>{{ user_paper.user.username }}</strong>
+                </td>
+                <td>
+                  <span class="layui-badge 
+                    {% if user_paper.is_completed %}layui-bg-green
+                    {% elif user_paper.completion_progress > 0 %}layui-bg-orange
+                    {% else %}layui-bg-gray{% endif %}">
+                    {{ user_paper.get_status_display }}
+                  </span>
+                </td>
+                <td>
+                  <div class="layui-progress" lay-showpercent="true" style="margin:0;">
+                    <div class="layui-progress-bar {{ user_paper.get_progress_color }}" 
+                         lay-percent="{{ user_paper.completion_progress }}%"></div>
+                  </div>
+                </td>
+                <td>
+                  {% if user_paper.completion_rate > 0 %}
+                    <span style="color:{% if user_paper.completion_rate >= 80 %}#5FB878{% elif user_paper.completion_rate >= 60 %}#FFB800{% else %}#FF5722{% endif %};">
+                      {{ user_paper.completion_rate }}%
+                    </span>
+                  {% else %}
+                    <span style="color:#999;">-</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if user_paper.total_duration_minutes > 0 %}
+                    {{ user_paper.total_duration_minutes }}分钟
+                  {% else %}
+                    <span style="color:#999;">-</span>
+                  {% endif %}
+                </td>
+                <td>
+                    {% if user_paper.first_login_time %}
+                        {{ user_paper.first_login_time|date:"m-d H:i" }}
+                    {% else %}
+                        <span style="color:#999;">未登录</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if user_paper.completed_at %}
+                        {{ user_paper.completed_at|date:"m-d H:i" }}
+                    {% else %}
+                        <span style="color:#999;">-</span>
+                    {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="8" style="text-align:center;color:#999;padding:30px;">
+                  {% if status_filter != 'all' %}
+                    暂无{{ status_filter }}状态的用户
+                  {% else %}
+                    暂无分配用户
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          
+          <!-- 分页 -->
+          {% if user_papers.has_other_pages %}
+          <div style="text-align:center;margin-top:20px;">
+            <div id="pagination"></div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 等待layui加载完成
+function initPageComponents() {
+    if (typeof layui !== 'undefined') {
+        layui.use(['element', 'laypage', 'layer'], function(){
+            var element = layui.element;
+            var laypage = layui.laypage;
+            var layer = layui.layer;
+            
+            // 初始化进度条
+            element.render('progress');
+            
+            // 初始化分页
+            if (document.getElementById('pagination')) {
+                laypage.render({
+                    elem: 'pagination',
+                    count: {{ user_papers.paginator.count }},
+                    limit: {{ user_papers.paginator.per_page }},
+                    curr: {{ user_papers.number }},
+                    layout: ['count', 'prev', 'page', 'next', 'limit', 'skip'],
+                    jump: function(obj, first){
+                        if(!first){
+                            var url = new URL(window.location);
+                            url.searchParams.set('page', obj.curr);
+                            window.location.href = url.toString();
+                        }
+                    }
+                });
+            }
+        });
+    } else {
+        // 如果layui还没加载，等待100ms后重试
+        setTimeout(initPageComponents, 100);
+    }
+}
+
+// 页面加载完成后初始化
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPageComponents);
+} else {
+    initPageComponents();
+}
+</script>
 {% endblock %}

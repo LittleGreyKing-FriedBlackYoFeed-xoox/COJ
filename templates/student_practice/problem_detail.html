@@ -536,10 +536,7 @@
                             {% endif %}
 
                             {% if problem.hint %}
-                            <div class="problem-section">
-                                <h2 class="problem-section-title">Hint</h2>
-                                <div>{{ problem.hint|safe }}</div>
-                            </div>
+                            <div class="problem-hint">提示：{{ problem.hint }}</div>
                             {% endif %}
                         </div>
 
@@ -621,7 +618,7 @@
                                         </tr>
                                         {% empty %}
                         <tr>
-                            <td colspan="6" style="text-align: center; padding: 30px;">No submission records</td>
+                            <td colspan="6" style="text-align:center;color:#999;">暂无提交记录</td></tr>
                         </tr>
                                         {% endfor %}
                                         {% else %}
@@ -1180,26 +1177,19 @@
 });
             
             // Request manual review
-            $('#requestReviewBtn').on('click', function() {
+            $('#request-review-btn').click(function() {
                 var code = editor.getValue();
                 if (!code.trim()) {
-                    layer.msg('Please write some code before requesting review', {icon: 0});
+                    layer.msg('代码不能为空', {icon: 2});
                     return;
                 }
-                
-                layer.confirm('Are you sure you want to request manual review from teacher?', {
-                    btn: ['Yes', 'Cancel'],
-                    icon: 3,
-                    title: 'Request Manual Review'
+
+                layer.confirm('确定要请求人工评审吗？', {
+                    title: '确认请求',
+                    btn: ['确定', '取消']
                 }, function(index) {
-                    var loadingIndex = layer.msg('Submitting review request...', {
-                        icon: 16,
-                        shade: 0.3,
-                        time: 0
-                    });
-                    
                     $.ajax({
-                        url: '{% url "manual_review:request_manual_review" problem.id %}',
+                        url: '{% url "manual_review:request_manual_review" %}',
                         type: 'POST',
                         data: {
                             'code': code,
