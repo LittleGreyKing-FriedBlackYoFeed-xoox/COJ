@@ -187,10 +187,9 @@ def student_problem_detail(request, problem_id):
                 submissions = []
                 print(f"Error fetching submissions: {str(e)}")
         
-        # 获取最后一次提交的代码
-        last_code = ""
-        if submissions and len(submissions) > 0:
-            last_code = submissions[0].code
+        # 获取用户最后一次提交的代码
+        last_submission = Submission.objects.filter(user=user, problem=problem).order_by('-created_at').first()
+        last_code = last_submission.code if last_submission else ""
         
         # 使用缓存获取统计数据
         stats_cache_key = f'user_{user_id}_problem_{problem_id}_stats'

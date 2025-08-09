@@ -55,6 +55,42 @@
             to { transform: rotate(360deg); }
         }
         
+        /* CodeMirror editor styles */
+        .CodeMirror {
+            height: 500px !important;
+            min-height: 500px !important;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .CodeMirror-focused {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(92, 124, 250, 0.1);
+        }
+        
+        .editor-toolbar {
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .editor-toolbar button {
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .editor-toolbar button:hover {
+            background: var(--light-gray);
+            border-color: var(--accent-color);
+        }
+        
         /* Add skeleton loading animation for content */
         @keyframes shimmer {
             0% { background-position: -468px 0 }
@@ -890,6 +926,10 @@
             var codeTextarea = document.getElementById("code");
             if (!codeTextarea) return;
             
+            // Get problem ID for localStorage key
+            var problemId = window.location.pathname.match(/\/problem\/(\d+)\//)[1];
+            var storageKey = 'code_draft_problem_' + problemId;
+            
             editor = CodeMirror.fromTextArea(codeTextarea, {
                 lineNumbers: true,
                 mode: "python",
@@ -903,6 +943,25 @@
                 extraKeys: {"Ctrl-Space": "autocomplete"},
                 autofocus: false, // Don't autofocus until tab is active
                 viewportMargin: Infinity
+            });
+            
+            // Load saved code from localStorage if no server-provided code
+            var serverCode = codeTextarea.value.trim();
+            if (!serverCode) {
+                var savedCode = localStorage.getItem(storageKey);
+                if (savedCode) {
+                    editor.setValue(savedCode);
+                }
+            }
+            
+            // Auto-save code to localStorage on changes
+            editor.on('change', function() {
+                var currentCode = editor.getValue();
+                if (currentCode.trim()) {
+                    localStorage.setItem(storageKey, currentCode);
+                } else {
+                    localStorage.removeItem(storageKey);
+                }
             });
             
             // Ensure code editor displays immediately
@@ -980,10 +1039,23 @@
             
             // Reset button functionality implementation
             $('button[type="reset"]').on('click', function() {
-                if (editor) {
-                    editor.setValue(''); // Clear code editor content
-                    editor.focus();
-                }
+                layer.confirm('Are you sure you want to clear all code? This will also remove your saved draft.', {
+                    title: 'Confirm Reset',
+                    btn: ['Yes', 'Cancel']
+                }, function(index) {
+                    if (editor) {
+                        editor.setValue(''); // Clear code editor content
+                        editor.focus();
+                        
+                        // Clear localStorage draft
+                        var problemId = window.location.pathname.match(/\/problem\/(\d+)\//)[1];
+                        var storageKey = 'code_draft_problem_' + problemId;
+                        localStorage.removeItem(storageKey);
+                        
+                        layer.msg('Code cleared', {icon: 1});
+                    }
+                    layer.close(index);
+                });
                 return false; // Prevent form default reset behavior
             });
             
@@ -1031,6 +1103,15 @@
                 });
                 
                 // Use AJAX to submit so we can fully control the data sent
+                $.ajaxSetup({
+                    beforeSend: function(xhr, settings) {
+                        if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                            // Only send the token to relative URLs i.e. locally.
+                            xhr.setRequestHeader("X-CSRFToken", csrfToken);
+                        }
+                    }
+                });
+                
                 $.ajax({
                     url: '{% url "student_practice:submit_solution" problem.id %}',
                     type: 'POST',
@@ -1041,6 +1122,7 @@
                     },
                     dataType: 'json',
                     timeout: 30000, // 30 second timeout
+                    cache: false,
                     success: function(response) {
                         layer.close(loadingIndex);
                         
@@ -1049,6 +1131,11 @@
                         $('#submitBtn').removeClass('layui-btn-disabled').text('Submit Code');
                         
                         if (response.success) {
+                            // Clear localStorage draft after successful submission
+                            var problemId = window.location.pathname.match(/\/problem\/(\d+)\//)[1];
+                            var storageKey = 'code_draft_problem_' + problemId;
+                            localStorage.removeItem(storageKey);
+                            
                             // Submission successful, show success prompt
                             layer.msg('Code submitted successfully! Redirecting to submission history...', {
                                 icon: 1,
@@ -1174,25 +1261,31 @@
                     tableBody.append(row);
                 });
             }
-});
             
             // Request manual review
-            $('#request-review-btn').click(function() {
+            $('#requestReviewBtn').click(function() {
                 var code = editor.getValue();
                 if (!code.trim()) {
-                    layer.msg('代码不能为空', {icon: 2});
+                    layer.msg('Code cannot be empty', {icon: 2});
                     return;
                 }
 
-                layer.confirm('确定要请求人工评审吗？', {
-                    title: '确认请求',
-                    btn: ['确定', '取消']
+                layer.confirm('Are you sure you want to request manual review?', {
+                    title: 'Confirm Request',
+                    btn: ['Yes', 'Cancel']
                 }, function(index) {
+                    var loadingIndex = layer.msg('Submitting review request...', {
+                        icon: 16,
+                        shade: [0.3, '#000'],
+                        time: 0
+                    });
+                    
                     $.ajax({
                         url: '{% url "manual_review:request_manual_review" %}',
                         type: 'POST',
                         data: {
                             'code': code,
+                            'problem_id': {{ problem.id }},
                             'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
                         },
                         success: function(response) {
