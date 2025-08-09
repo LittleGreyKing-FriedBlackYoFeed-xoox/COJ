@@ -28,15 +28,15 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/addon/display/fullscreen.css">
     
     <!-- CodeMirror scripts with defer for better performance -->
-    <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/lib/codemirror.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/mode/python/python.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/mode/clike/clike.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/mode/javascript/javascript.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/addon/edit/matchbrackets.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/addon/edit/closebrackets.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/addon/hint/show-hint.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/addon/hint/anyword-hint.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/addon/display/fullscreen.js"></script>
+    <script type="text/javascript" defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/lib/codemirror.min.js"></script>
+    <script type="text/javascript" defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/mode/python/python.min.js"></script>
+    <script type="text/javascript" defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/mode/clike/clike.min.js"></script>
+    <script type="text/javascript" defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/mode/javascript/javascript.min.js"></script>
+    <script type="text/javascript" defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/addon/edit/matchbrackets.min.js"></script>
+    <script type="text/javascript" defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/addon/edit/closebrackets.min.js"></script>
+    <script type="text/javascript" defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/addon/hint/show-hint.min.js"></script>
+    <script type="text/javascript" defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/addon/hint/anyword-hint.min.js"></script>
+    <script type="text/javascript" defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.5/addon/display/fullscreen.js"></script>
     <style>
         /* Add loading animation style */
         .submit-loading {
@@ -559,12 +559,12 @@
                                 <div>
                                     <h3 style="font-size: 16px; margin-top: 10px;">Input:</h3>
                                     <div class="code-block">
-                                        <button class="copy-btn" onclick="copyToClipboard(this, '{{ problem.sample_input }}')">Copy</button>
+                                        <button class="copy-btn" data-copy-text="{{ problem.sample_input }}">Copy</button>
                                         <pre>{{ problem.sample_input }}</pre>
                                     </div>
                                     <h3 style="font-size: 16px; margin-top: 10px;">Output:</h3>
                                     <div class="code-block">
-                                        <button class="copy-btn" onclick="copyToClipboard(this, '{{ problem.sample_output }}')">Copy</button>
+                                        <button class="copy-btn" data-copy-text="{{ problem.sample_output }}">Copy</button>
                                         <pre>{{ problem.sample_output }}</pre>
                                     </div>
                                 </div>
@@ -599,8 +599,8 @@
                                         <label class="layui-form-label">Code</label>
                                         <div class="layui-input-block">
                                             <div class="editor-toolbar">
-                                                <button type="button" onclick="formatCode()">Format Code</button>
-                                                <button type="button" onclick="toggleFullScreen()">Full Screen</button>
+                                                <button type="button" id="formatCodeBtn">Format Code</button>
+                                                <button type="button" id="fullScreenBtn">Full Screen</button>
                                             </div>
                                             <textarea id="code" name="code" required lay-verify="required">{{ last_code }}</textarea>
                                         </div>
@@ -762,6 +762,29 @@
                 });
             });
         }
+        
+        // Add event listeners for copy buttons and toolbar buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            // Copy button event listeners
+            document.querySelectorAll('.copy-btn').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    var text = this.getAttribute('data-copy-text');
+                    copyToClipboard(this, text);
+                });
+            });
+            
+            // Format code button
+            var formatBtn = document.getElementById('formatCodeBtn');
+            if (formatBtn) {
+                formatBtn.addEventListener('click', formatCode);
+            }
+            
+            // Full screen button
+            var fullScreenBtn = document.getElementById('fullScreenBtn');
+            if (fullScreenBtn) {
+                fullScreenBtn.addEventListener('click', toggleFullScreen);
+            }
+        });
         
         // Function to format code in editor
         function formatCode() {

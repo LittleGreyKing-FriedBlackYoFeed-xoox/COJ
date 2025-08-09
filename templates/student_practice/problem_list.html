@@ -482,7 +482,7 @@
                 
                 <span class="layui-laypage-count">Total {{ problems.paginator.count }} items</span>
                 <span class="layui-laypage-limits">
-                    <select lay-ignore onchange="window.location.href=this.value">
+                    <select name="per_page_selector" lay-ignore onchange="window.location.href=this.value">
                         <option value="?page=1&per_page=10{% for key, value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" {% if request.GET.per_page == '10' or not request.GET.per_page %}selected{% endif %}>10 items/page</option>
                         <option value="?page=1&per_page=20{% for key, value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" {% if request.GET.per_page == '20' %}selected{% endif %}>20 items/page</option>
                         <option value="?page=1&per_page=30{% for key, value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" {% if request.GET.per_page == '30' %}selected{% endif %}>30 items/page</option>
